@@ -27,7 +27,9 @@ document.getElementById('deck').addEventListener('click', (e) => {
 });
 
 let touchX = null;
-document.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchstart', (e) => {
+  touchX = e.target.closest('.table-wrap') ? null : e.touches[0].clientX;
+}, { passive: true });
 document.addEventListener('touchend', (e) => {
   if (touchX === null) return;
   const dx = e.changedTouches[0].clientX - touchX;
