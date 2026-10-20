@@ -20,7 +20,30 @@ function show(i) {
   counter.textContent = `${current + 1} / ${slides.length}`;
   bar.style.width = `${((current + 1) / slides.length) * 100}%`;
   history.replaceState(null, '', `#${current + 1}`);
+  // 데모 애니메이션은 슬라이드를 열 때마다 처음부터 다시 재생
+  slides[current].querySelectorAll('.demo').forEach((d) => {
+    d.classList.remove('play');
+    void d.offsetWidth;
+    d.classList.add('play');
+  });
 }
+
+// 밝게/어둡게: 처음엔 기기 설정을 따르고, 바꾸면 이 브라우저에 기억
+const root = document.documentElement;
+try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch (e) {}
+function toggleTheme() {
+  const dark = root.dataset.theme
+    ? root.dataset.theme === 'dark'
+    : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+}
+function toggleFull() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen?.();
+}
+document.getElementById('theme').addEventListener('click', toggleTheme);
+document.getElementById('full').addEventListener('click', toggleFull);
 
 document.getElementById('prev').addEventListener('click', () => show(current - 1));
 document.getElementById('next').addEventListener('click', () => show(current + 1));
@@ -29,6 +52,8 @@ document.addEventListener('keydown', (e) => {
   if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(current + 1); }
   if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(current - 1); }
   if (e.key === 'Home') show(0);
+  if (e.key === 't' || e.key === 'T') toggleTheme();
+  if (e.key === 'f' || e.key === 'F') toggleFull();
   if (e.key === 'End') show(slides.length - 1);
 });
 

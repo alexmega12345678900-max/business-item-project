@@ -81,13 +81,14 @@
         <li><strong>AI가 기한 계산</strong>기준일과 규칙을 읽어 자동 등록</li>
         <li><strong>미리 알림</strong>마감 3일 전·1일 전, 해지·반품 방법까지</li>
       </ol>
-      <div class="phone" aria-label="앱 화면 예시">
+      <div class="phone demo" aria-label="앱 화면 예시: 결제 문자를 붙여 넣으면 기한이 목록에 추가됨">
+        <div class="sms"><small>붙여 넣은 문자</small>[Web발신] 영상편집 Pro 7일 무료체험 시작(10/17). 10/24부터 연 79,000원 자동결제</div>
+        <div class="found">✨ 기한을 찾았어요 · 무료체험 종료 10/24</div>
         <div class="phone-head">다가오는 기한</div>
         <div class="item urgent"><span class="dday">D-1</span><div><b>영상편집 Pro</b><small>무료체험 종료 · 이후 연 79,000원</small></div></div>
-        <div class="item"><span class="dday">D-3</span><div><b>러닝화</b><small>반품 기한 · 10/18 수령</small></div></div>
+        <div class="item"><span class="dday">D-3</span><div><b>러닝화</b><small>반품 기한 · 10/19 수령</small></div></div>
         <div class="item"><span class="dday">D-12</span><div><b>음악 스트리밍</b><small>구독 갱신 · 월 10,900원</small></div></div>
         <div class="item"><span class="dday">D-140</span><div><b>무선 이어폰</b><small>보증기간 만료</small></div></div>
-        <div class="paste">+ 결제 문자 붙여넣기</div>
       </div>
     </div>
   </section>
@@ -97,15 +98,15 @@
     <p class="eyebrow">시장과 수익 모델</p>
     <h2>구독을 한곳에서 관리하고 싶은<br>841만 명이 첫 번째 시장입니다</h2>
     <div class="funnel">
-      <div class="tier t1"><b>전체 시장</b><span>구독 서비스를 쓰는 20~30대</span><strong>1,185만 명</strong></div>
-      <div class="tier t2"><b>유효 시장</b><span>그중 통합 관리를 원하는 71%</span><strong>841만 명</strong></div>
-      <div class="tier t3"><b>3년 목표</b><span>유효 시장의 1.2%</span><strong>가입자 10만 명</strong></div>
+      <div class="tier t1"><b>구독 중인 20~30대</b><span>20~30대 1,236만 명 중 95.9%</span><strong>1,185만 명</strong></div>
+      <div class="tier t2"><b>한곳에서 관리하고 싶은 사람</b><span>그중 71%</span><strong>841만 명</strong></div>
+      <div class="tier t3"><b>3년 안에 모을 가입자</b><span>841만 명 중 약 1%</span><strong>10만 명</strong></div>
     </div>
     <div class="pricing">
       <div><b>무료</b><span>붙여넣기 등록 · 기한 목록 · 알림</span></div>
       <div class="accent"><b>프리미엄 월 1,900원</b><span>영수증 사진 인식 · 무제한 등록 · 가족 공유</span></div>
     </div>
-    <p class="source">행안부 주민등록(2025.12) 20~30대 1,236만 명 × 구독 이용률 95.9%(서울시) × 통합 관리 수요 71%(Bango 2024)</p>
+    <p class="source">행정안전부 주민등록 인구(2025.12) · 구독 이용률 95.9%(서울시전자상거래센터) · 통합 관리 희망 71%(Bango 2024)</p>
   </section>
 
   <!-- 7. 결: 고객이 얻는 것 -->
@@ -113,8 +114,8 @@
     <p class="eyebrow">고객이 얻는 것</p>
     <h2>안 쓰는 구독 하나만 막아도<br>1년 요금의 2.7배를 아낍니다</h2>
     <div class="stats">
-      <div class="stat"><span class="num">48<em>만 원</em></span><span class="label">한 사람이 1년 동안<br>구독에 쓰는 돈 (월 40,530원)</span></div>
-      <div class="stat"><span class="num">7<em>일</em></span><span class="label">무료체험 10건 중 6건은<br>일주일 안에 유료로 넘어감</span></div>
+      <div class="stat"><span class="num">48<em>만 원</em></span><span class="label">한 사람이 1년 동안 구독에<br>쓰는 돈 (월평균 40,530원)</span></div>
+      <div class="stat"><span class="num">7<em>일</em></span><span class="label">무료체험 피해 10건 중 6건은<br>무료기간이 일주일 이하</span></div>
       <div class="stat"><span class="num">6<em>만 원</em></span><span class="label">안 쓰는 구독 하나를 해지하면<br>1년에 아끼는 돈</span></div>
     </div>
     <p class="lead small">놓침제로는 기본 무료, 프리미엄도 <b>1년 22,800원</b>입니다.</p>
@@ -153,6 +154,8 @@
 </main>
 
 <nav class="controls" aria-label="슬라이드 이동">
+  <button id="theme" class="tool" aria-label="밝은 화면/어두운 화면 전환 (T)" title="밝게/어둡게 (T)">◐</button>
+  <button id="full" class="tool" aria-label="전체 화면 (F)" title="전체 화면 (F)">⛶</button>
   <button id="prev" aria-label="이전">←</button>
   <span id="counter">1 / 1</span>
   <button id="next" aria-label="다음">→</button>
