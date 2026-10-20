@@ -131,6 +131,7 @@ textarea, input, select { max-width: 100%; }
       <ul class="list" id="list"></ul>
       <p class="tip" id="alert" hidden></p>
       <p class="note">실제 서비스에서는 마감 3일 전·1일 전에 알림을 보내고, 해지·반품 방법을 함께 안내합니다.</p>
+      <div class="row"><button id="clear">목록 비우기</button></div>
     </section>
   </div>
 </div>
@@ -195,18 +196,25 @@ function parse(text) {
   let n = null, unit = null;
   const dur = t.match(/(\d+)\s*(일|개월|달|년)\s*(?:무료|체험|이내|간|보증|동안)/) || t.match(/(?:보증\s*기간|품질\s*보증\s*기간)\s*(\d+)\s*(일|개월|달|년)/);
   if (dur) { n = +dur[1]; unit = { 일: 'd', 개월: 'm', 달: 'm', 년: 'y' }[dur[2]]; }
+  else if (/한\s*달/.test(t)) { n = 1; unit = 'm'; }
+  else if (/두\s*달/.test(t)) { n = 2; unit = 'm'; }
+  else if (/일주일/.test(t)) { n = 7; unit = 'd'; }
   if (type === 'sub' && /연\s*[\d,]+\s*원|매년|연간/.test(t)) { n = 1; unit = 'y'; }
   if (type === 'sub' && !n) { n = 1; unit = 'm'; }
 
   const amount = (t.match(/(?:연|월)?\s*([\d,]{3,})\s*원/) || [])[0]?.trim() || '';
   // 이름: 앞쪽 [발신처] 표시와 "주문하신" 같은 말을 떼고, 숫자·결제 관련 말이 나오기 전까지
   const head = t.replace(/^\s*(?:\[[^\]]*\]\s*)+/, '').replace(/^(?:주문하신|고객님의|고객님)\s*/, '');
-  let name = (head.match(/^([가-힣A-Za-z+ ]{2,20}?)(?=\s*(?:\d|월\s|연\s|정기|구독|구매|무료|결제|배송|가\s|이\s))/) || [])[1]?.trim() || '';
+  let name = (head.match(/^([가-힣A-Za-z+ ]{2,20}?)(?=\s*(?:\d|월\s|연\s|한\s*달|두\s*달|일주일|정기|구독|구매|무료|결제|배송|가\s|이\s))/) || [])[1]?.trim() || '';
   if (!name) name = TYPES[type].label;
 
   const def = TYPES[type];
   n = n ?? def.n; unit = unit ?? def.unit;
   let base = dates[0]?.dt || today();
+  // 무료체험인데 날짜가 "10/24부터 자동결제"처럼 종료일 하나뿐이면, 그 날짜가 기한이 되도록 기준일을 거꾸로 계산
+  if (type === 'trial' && dates.length === 1 && /^\D{0,3}(?:부터|에|이후)/.test(t.slice(dates[0].i).replace(/^[\d/.월일\s]+/, ''))) {
+    base = addRule(base, -n, unit);
+  }
   // 구독은 지난 결제일이면 주기를 더해 가장 최근 결제일로 맞춤 → 다음 갱신일이 오늘 이후가 됨
   if (type === 'sub') while (addRule(base, n, unit) < today()) base = addRule(base, n, unit);
   return {
@@ -286,6 +294,7 @@ $('add').onclick = () => {
   $('confirm').classList.remove('show'); $('text').value = '';
 };
 $('cancel').onclick = () => $('confirm').classList.remove('show');
+$('clear').onclick = () => { items = []; save(); render(); };
 
 for (const [k, v] of samples()) {
   const b = document.createElement('button');
