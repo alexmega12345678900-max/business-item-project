@@ -211,7 +211,7 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
 .progress { position: fixed; top: 0; left: 0; right: 0; height: 4px; }
 #bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s; }
 
-@media (max-width: 760px) {
+@media screen and (max-width: 760px) {
   .slide { justify-content: flex-start; padding-top: 9vh; }
   .cover { padding-top: 12vh; }
   .stages { top: 2.5vh; }
@@ -229,9 +229,16 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
   .compare td:first-child { white-space: normal; }
 }
 
+@page { size: 1280px 720px; margin: 0; }
 @media print {
-  body { overflow: visible; }
-  .slide { display: flex !important; position: relative; height: 100vh; page-break-after: always; }
+  html, body { height: auto; overflow: visible; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide { display: flex !important; position: relative; width: 1280px; height: 720px; max-width: none; padding: 70px 90px 50px; overflow: hidden; break-after: page; animation: none !important; }
+  .slide * { animation: none !important; }
+  .slide * { box-shadow: none !important; }
+  .phone { gap: .4rem; padding: .9rem; }
+  .phone .item { padding: .4rem .6rem; }
+  .stages { top: 28px; left: 90px; }
+  .cover::before { position: absolute; }
   .controls, .progress { display: none; }
 }
 

@@ -13,7 +13,10 @@
 ```
 docs/plan.md      기획서 원본 — 모든 내용의 기준
 docs/research/    조사 자료와 출처 (01 시장·문제 근거, 02 사업성 계산)
-docs/survey.md    설문 초안 (선택)
+docs/발표-대본.md  10분 발표 대본 (슬라이드별 말할 내용과 시간)
+docs/예상-질문.md  질의응답 대비 (사업성 숫자 포함)
+docs/놓침제로-발표.pdf  인터넷이 안 될 때 쓰는 PDF 백업본
+docs/survey.md    설문 초안 (보류)
 site/             발표 사이트 (index.html 한 파일에 슬라이드가 있음)
 ```
 
@@ -30,7 +33,14 @@ site/             발표 사이트 (index.html 한 파일에 슬라이드가 있
 npx serve site
 ```
 
-조작: `→` / `Space` 다음, `←` 이전, `Home` / `End` 처음 / 끝, 화면 좌우 클릭 또는 스와이프.
+조작: `→` / `Space` 다음, `←` 이전, `Home` / `End` 처음 / 끝, 화면 좌우 클릭 또는 스와이프, `F` 전체 화면, `T` 밝게/어둡게.
+
+PDF 백업본 다시 만들기 (슬라이드를 고친 뒤):
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --no-pdf-header-footer \
+  --print-to-pdf=docs/놓침제로-발표.pdf "file://$PWD/site/index.html"
+```
 
 ## 팀원 작업 방법
 
