@@ -18,6 +18,7 @@ docs/예상-질문.md  질의응답 대비 (사업성 숫자 포함)
 docs/놓침제로-발표.pdf  인터넷이 안 될 때 쓰는 PDF 백업본
 docs/survey.md    설문 초안 (보류)
 site/             발표 사이트 (index.html 한 파일에 슬라이드가 있음)
+site/try.html     체험판 — 결제 문자를 붙여 넣으면 기한을 계산해 D-day 목록에 넣음 (규칙 기반, AI 연결 전)
 ```
 
 기획서(`docs/plan.md`)를 먼저 고치고, 그 내용을 `site/index.html`의 슬라이드에 반영합니다.

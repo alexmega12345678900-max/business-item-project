@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>놓침제로 체험판</title>
+<meta name="description" content="결제 문자를 붙여 넣으면 기한 = 기준일 + 규칙으로 마감일을 계산해 주는 체험판">
+<meta name="theme-color" content="#2f5bea">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f5bea'/%3E%3Ctext x='32' y='44' font-size='34' font-family='sans-serif' font-weight='800' fill='white' text-anchor='middle'%3ED-1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root {
+  --bg: #f6f7fb; --fg: #14161c; --muted: #5f6573; --faint: #6b7180;
+  --accent: #2f5bea; --accent-soft: #e7edff; --danger: #d6453d; --danger-soft: #fdecea;
+  --card: #ffffff; --line: #e1e4ec;
+  --shadow: 0 1px 2px rgba(20, 22, 28, .04), 0 8px 24px rgba(20, 22, 28, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115; --fg: #eef0f4; --muted: #a3a9b6; --faint: #858b98;
+    --accent: #7c9cff; --accent-soft: #1b2340; --danger: #ff7b72; --danger-soft: #3a1d1c;
+    --card: #171a21; --line: #262a33; --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115; --fg: #eef0f4; --muted: #a3a9b6; --faint: #858b98;
+  --accent: #7c9cff; --accent-soft: #1b2340; --danger: #ff7b72; --danger-soft: #3a1d1c;
+  --card: #171a21; --line: #262a33; --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  word-break: keep-all; line-height: 1.5;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 20px; }
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h1 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -.01em; }
+h1 small { font-size: .8rem; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: .1rem .55rem; margin-left: .5rem; vertical-align: middle; }
+.lead { color: var(--muted); }
+.formula { font-weight: 800; }
+.formula span { color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 0 .3em; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: var(--shadow); display: grid; gap: 14px; }
+.card h2 { font-size: 1.05rem; }
+textarea {
+  width: 100%; min-height: 120px; resize: vertical; font: inherit; color: var(--fg);
+  background: var(--bg); border: 1px dashed var(--accent); border-radius: 12px; padding: 12px;
+}
+.samples { display: flex; flex-wrap: wrap; gap: 6px; }
+.samples span { color: var(--faint); font-size: .85rem; align-self: center; margin-right: 2px; }
+button, select, input {
+  font: inherit; color: var(--fg); background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: .45rem .7rem;
+}
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+.chip { font-size: .85rem; border-radius: 999px; }
+.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; padding: .6rem 1rem; }
+:root[data-theme="dark"] .primary { color: #0f1115; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .primary { color: #0f1115; } }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.confirm { display: none; border: 1px solid var(--accent); border-radius: 14px; padding: 14px; gap: 10px; background: var(--accent-soft); }
+.confirm.show { display: grid; }
+.confirm .found { font-weight: 700; color: var(--accent); }
+.fields { display: grid; grid-template-columns: 5.5rem 1fr; gap: 8px 10px; align-items: center; font-size: .95rem; }
+.fields label { color: var(--muted); }
+.fields input, .fields select { width: 100%; min-width: 0; }
+.fields .row { flex-wrap: nowrap; }
+.fields .row input, .fields .row select { width: auto; }
+.grid > *, .fields > * { min-width: 0; }
+textarea, input, select { max-width: 100%; }
+.calc { font-size: 1rem; }
+.calc b { color: var(--accent); }
+.empty { color: var(--faint); text-align: center; padding: 24px 0; }
+.list { display: grid; gap: 8px; list-style: none; }
+.item { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--bg); }
+.item .dday { min-width: 4rem; text-align: center; font-weight: 800; font-size: .85rem; color: var(--accent); background: var(--accent-soft); border-radius: 8px; padding: .35rem 0; }
+.item.urgent .dday { color: #fff; background: var(--danger); }
+.item.past { opacity: .55; }
+.item div { flex: 1; min-width: 0; }
+.item b { display: block; }
+.item small { color: var(--muted); }
+.item .del { border: 0; background: transparent; color: var(--faint); font-size: 1.1rem; padding: .2rem .4rem; }
+.note { color: var(--faint); font-size: .85rem; }
+.tip { font-size: .9rem; color: var(--muted); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.tip.warn { border-color: var(--danger); background: var(--danger-soft); color: var(--fg); }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>놓침제로 체험판<small>규칙 기반 · AI 연결 전</small></h1>
+      <p class="lead">결제 문자를 붙여 넣으면 <span class="formula">기한 = <span>기준일</span> + <span>규칙</span></span>으로 마감일을 계산합니다.</p>
+    </div>
+    <a href="./#5">← 발표로 돌아가기</a>
+  </header>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-in">
+      <h2 id="h-in">1. 결제 문자 붙여넣기</h2>
+      <textarea id="text" placeholder="결제 문자, 주문 확인 메일 내용을 붙여 넣으세요"></textarea>
+      <div class="samples" id="samples"><span>예시:</span></div>
+      <div class="row"><button class="primary" id="read">기한 찾기</button><span class="note">입력한 내용은 이 브라우저에만 저장됩니다.</span></div>
+
+      <div class="confirm" id="confirm" aria-live="polite">
+        <p class="found" id="found"></p>
+        <div class="fields">
+          <label for="f-name">이름</label><input id="f-name">
+          <label for="f-type">기한 종류</label>
+          <select id="f-type">
+            <option value="trial">무료체험 종료</option>
+            <option value="sub">구독 갱신</option>
+            <option value="return">반품 기한</option>
+            <option value="warranty">보증기간</option>
+          </select>
+          <label for="f-base" id="l-base">기준일</label><input id="f-base" type="date">
+          <label for="f-n" id="l-rule">규칙</label>
+          <div class="row"><span>+</span><input id="f-n" type="number" min="1" style="width:5rem"><select id="f-unit"><option value="d">일</option><option value="m">개월</option><option value="y">년</option></select></div>
+        </div>
+        <p class="calc" id="calc"></p>
+        <div class="row"><button class="primary" id="add">목록에 추가</button><button id="cancel">취소</button></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-list">
+      <h2 id="h-list">2. 다가오는 기한</h2>
+      <ul class="list" id="list"></ul>
+      <p class="tip" id="alert" hidden></p>
+      <p class="note">실제 서비스에서는 마감 3일 전·1일 전에 알림을 보내고, 해지·반품 방법을 함께 안내합니다.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+// 규칙: 기한 종류마다 "기준일 + 규칙" 기본값. 문자에서 찾은 값이 있으면 그 값을 씀
+const TYPES = {
+  trial:    { label: '무료체험 종료', base: '가입일', n: 7, unit: 'd' },
+  sub:      { label: '구독 갱신',     base: '결제일', n: 1, unit: 'm' },
+  return:   { label: '반품 기한',     base: '수령일', n: 7, unit: 'd' },
+  warranty: { label: '보증기간',      base: '구매일', n: 1, unit: 'y' },
+};
+const UNIT = { d: '일', m: '개월', y: '년' };
+
+const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const fromIso = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const md = (d) => `${d.getFullYear() !== today().getFullYear() ? `${d.getFullYear()}.` : ''}${d.getMonth() + 1}/${d.getDate()}`;
+const addRule = (base, n, unit) => {
+  const d = new Date(base);
+  if (unit === 'd') d.setDate(d.getDate() + n);
+  if (unit === 'm') d.setMonth(d.getMonth() + n);
+  if (unit === 'y') d.setFullYear(d.getFullYear() + n);
+  return d;
+};
+const dday = (d) => Math.round((d - today()) / 86400000);
+
+// 예시 날짜는 오늘 기준으로 만들어 언제 열어도 D-day가 자연스럽게 보이게 함
+function samples() {
+  const t = today();
+  const ago = (n) => { const d = new Date(t); d.setDate(d.getDate() - n); return d; };
+  return [
+    ['무료체험', `[Web발신] 영상편집 Pro 7일 무료체험이 시작되었습니다(${md(ago(6))}). 체험 종료 후 연 79,000원이 자동결제됩니다.`],
+    ['구독', `[Web발신] 음악 스트리밍 정기결제 ${md(ago(18))} 10,900원 승인. 다음 결제는 매월 같은 날입니다.`],
+    ['반품', `[쇼핑몰] 주문하신 러닝화가 ${md(ago(4))} 배송완료 되었습니다. 받은 날부터 7일 이내 반품 신청 가능합니다.`],
+    ['보증', `[전자랜드] 무선 이어폰 구매 ${ago(220).getFullYear()}.${String(ago(220).getMonth() + 1).padStart(2, '0')}.${String(ago(220).getDate()).padStart(2, '0')} 159,000원 결제완료. 품질보증기간 1년.`],
+  ];
+}
+
+// 문자 읽기: 종류 → 날짜 → 기간 → 금액 → 이름 순서로 찾음 (체험판은 규칙 기반)
+function parse(text) {
+  const t = text.replace(/\s+/g, ' ');
+  let type = 'sub';
+  if (/무료\s*체험|체험\s*기간|무료\s*이용/.test(t)) type = 'trial';
+  else if (/배송\s*완료|수령|도착|반품|교환/.test(t)) type = 'return';
+  else if (/보증|구매\s*확정|품질/.test(t)) type = 'warranty';
+  else if (/정기\s*결제|구독|자동\s*결제|갱신|멤버십/.test(t)) type = 'sub';
+
+  const dates = [];
+  const y0 = today().getFullYear();
+  const push = (y, m, d, i) => {
+    const dt = new Date(y ?? y0, m - 1, d);
+    if (dt.getMonth() !== m - 1) return;
+    if (y == null && dt - today() > 300 * 86400000) dt.setFullYear(y0 - 1);
+    dates.push({ dt, i });
+  };
+  for (const m of t.matchAll(/(20\d{2})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})/g)) push(+m[1], +m[2], +m[3], m.index);
+  const rest = t.replace(/(20\d{2})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})/g, (s) => ' '.repeat(s.length));
+  for (const m of rest.matchAll(/(?<![\d,])(\d{1,2})\s*(?:\/|월\s*)(\d{1,2})(?:일)?(?![\d,])/g)) push(null, +m[1], +m[2], m.index);
+  dates.sort((a, b) => a.i - b.i);
+
+  let n = null, unit = null;
+  const dur = t.match(/(\d+)\s*(일|개월|달|년)\s*(?:무료|체험|이내|간|보증|동안)/) || t.match(/(?:보증\s*기간|품질\s*보증\s*기간)\s*(\d+)\s*(일|개월|달|년)/);
+  if (dur) { n = +dur[1]; unit = { 일: 'd', 개월: 'm', 달: 'm', 년: 'y' }[dur[2]]; }
+  if (type === 'sub' && /연\s*[\d,]+\s*원|매년|연간/.test(t)) { n = 1; unit = 'y'; }
+  if (type === 'sub' && !n) { n = 1; unit = 'm'; }
+
+  const amount = (t.match(/(?:연|월)?\s*([\d,]{3,})\s*원/) || [])[0]?.trim() || '';
+  // 이름: 앞쪽 [발신처] 표시와 "주문하신" 같은 말을 떼고, 숫자·결제 관련 말이 나오기 전까지
+  const head = t.replace(/^\s*(?:\[[^\]]*\]\s*)+/, '').replace(/^(?:주문하신|고객님의|고객님)\s*/, '');
+  let name = (head.match(/^([가-힣A-Za-z+ ]{2,20}?)(?=\s*(?:\d|월\s|연\s|정기|구독|구매|무료|결제|배송|가\s|이\s))/) || [])[1]?.trim() || '';
+  if (!name) name = TYPES[type].label;
+
+  const def = TYPES[type];
+  n = n ?? def.n; unit = unit ?? def.unit;
+  let base = dates[0]?.dt || today();
+  // 구독은 지난 결제일이면 주기를 더해 가장 최근 결제일로 맞춤 → 다음 갱신일이 오늘 이후가 됨
+  if (type === 'sub') while (addRule(base, n, unit) < today()) base = addRule(base, n, unit);
+  return {
+    type, name, base,
+    baseFound: !!dates[0],
+    n, unit, ruleFound: !!dur || type === 'sub',
+    amount,
+  };
+}
+
+const $ = (id) => document.getElementById(id);
+let items = [];
+try { items = JSON.parse(localStorage.getItem('nochim-items') || '[]'); } catch (e) { items = []; }
+const save = () => { try { localStorage.setItem('nochim-items', JSON.stringify(items)); } catch (e) {} };
+
+function preview() {
+  const type = $('f-type').value;
+  const base = $('f-base').value ? fromIso($('f-base').value) : today();
+  const n = Math.max(1, +$('f-n').value || 1);
+  const unit = $('f-unit').value;
+  const end = addRule(base, n, unit);
+  $('l-base').textContent = TYPES[type].base;
+  $('calc').innerHTML = `${TYPES[type].base} ${md(base)} + ${n}${UNIT[unit]} = <b>${TYPES[type].label} ${md(end)}</b> (${label(dday(end))})`;
+  return end;
+}
+const label = (n) => (n === 0 ? 'D-day' : n > 0 ? `D-${n}` : `${-n}일 지남`);
+
+function render() {
+  const list = $('list');
+  list.innerHTML = '';
+  const sorted = [...items].sort((a, b) => a.end.localeCompare(b.end));
+  if (!sorted.length) list.innerHTML = '<li class="empty">아직 등록된 기한이 없습니다. 왼쪽 예시를 눌러 보세요.</li>';
+  for (const it of sorted) {
+    const d = dday(fromIso(it.end));
+    const li = document.createElement('li');
+    li.className = `item${d >= 0 && d <= 3 ? ' urgent' : ''}${d < 0 ? ' past' : ''}`;
+    li.innerHTML = `<span class="dday"></span><div><b></b><small></small></div><button class="del" aria-label="삭제">×</button>`;
+    li.querySelector('.dday').textContent = label(d);
+    li.querySelector('b').textContent = it.name;
+    li.querySelector('small').textContent = `${TYPES[it.type].label} · ${md(fromIso(it.end))}${it.amount ? ` · ${it.amount}` : ''}`;
+    li.querySelector('.del').onclick = () => { items = items.filter((x) => x !== it); save(); render(); };
+    list.append(li);
+  }
+  const soon = sorted.find((it) => { const d = dday(fromIso(it.end)); return d >= 0 && d <= 3; });
+  const a = $('alert');
+  a.hidden = !soon;
+  if (soon) {
+    a.className = 'tip warn';
+    a.textContent = `🔔 알림 미리보기: "${soon.name}" ${TYPES[soon.type].label}까지 ${label(dday(fromIso(soon.end)))}. ${soon.type === 'return' ? '반품 신청 방법을 확인하세요.' : soon.type === 'warranty' ? '무상 수리가 필요하면 지금 신청하세요.' : '계속 쓰지 않을 거라면 지금 해지하세요.'}`;
+  }
+}
+
+$('read').onclick = () => {
+  const text = $('text').value.trim();
+  if (!text) { $('text').focus(); return; }
+  const p = parse(text);
+  $('f-name').value = p.name;
+  $('f-type').value = p.type;
+  $('f-base').value = iso(p.base);
+  $('f-n').value = p.n;
+  $('f-unit').value = p.unit;
+  $('found').textContent = `✨ 기한을 찾았어요 · ${TYPES[p.type].label}` +
+    (p.baseFound ? '' : ' (날짜를 못 찾아 오늘로 넣었어요)') +
+    (p.ruleFound ? '' : ` (기간은 기본값 ${p.n}${UNIT[p.unit]})`);
+  $('confirm').classList.add('show');
+  preview();
+};
+['f-type', 'f-base', 'f-n', 'f-unit'].forEach((id) => $(id).addEventListener('input', preview));
+$('f-type').addEventListener('change', () => {
+  const d = TYPES[$('f-type').value]; $('f-n').value = d.n; $('f-unit').value = d.unit; preview();
+});
+$('add').onclick = () => {
+  const end = preview();
+  items.push({ name: $('f-name').value.trim() || TYPES[$('f-type').value].label, type: $('f-type').value, end: iso(end), amount: '' });
+  const amt = parse($('text').value).amount; if (amt) items[items.length - 1].amount = amt;
+  save(); render();
+  $('confirm').classList.remove('show'); $('text').value = '';
+};
+$('cancel').onclick = () => $('confirm').classList.remove('show');
+
+for (const [k, v] of samples()) {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.textContent = k;
+  b.onclick = () => { $('text').value = v; $('read').click(); };
+  $('samples').append(b);
+}
+try { const th = localStorage.getItem('theme'); if (th) document.documentElement.dataset.theme = th; } catch (e) {}
+render();
+</script>
+</body>
+</html>
