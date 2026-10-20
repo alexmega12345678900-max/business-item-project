@@ -100,6 +100,15 @@ h3 { font-size: 1.1rem; margin-bottom: .4rem; }
   width: 60vmax; height: 60vmax; right: -18vmax; top: -22vmax; border-radius: 50%;
   background: radial-gradient(circle, var(--accent-soft) 0%, transparent 65%);
 }
+/* 표지 오른쪽 장식: D-day 카드 (넓은 화면에서만) */
+.hero {
+  position: absolute; right: max(16px, 7vw); top: 50%; transform: translateY(-50%) rotate(-4deg);
+  width: min(21rem, 32vw); display: grid; gap: .6rem; padding: 1.1rem;
+  background: var(--card); border: 1px solid var(--line); border-radius: 26px; box-shadow: 0 24px 60px rgba(20, 22, 28, .14);
+}
+.hero .item { background: var(--bg); }
+.hero .item:nth-child(n+3) { opacity: .75; }
+@media (max-width: 1000px), (max-height: 560px) { .hero { display: none; } }
 .chips { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; }
 .chips li {
   font-size: clamp(.9rem, 1.4vw, 1.05rem); font-weight: 600;
@@ -273,6 +282,7 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
   .phone .item { padding: .4rem .6rem; }
   .stages { top: 28px; left: 90px; }
   .cover::before { position: absolute; }
+  .hero { display: grid !important; right: 90px; width: 340px; }
   .controls, .progress { display: none; }
 }
 
