@@ -2,7 +2,7 @@
   --bg: #f6f7fb;
   --fg: #14161c;
   --muted: #5f6573;
-  --faint: #9aa0ad;
+  --faint: #6b7180;
   --accent: #2f5bea;
   --accent-2: #6b8cff;
   --accent-soft: #e7edff;
@@ -16,7 +16,7 @@
     --bg: #0f1115;
     --fg: #eef0f4;
     --muted: #a3a9b6;
-    --faint: #6c7280;
+    --faint: #858b98;
     --accent: #7c9cff;
     --accent-2: #a9bcff;
     --accent-soft: #1b2340;
@@ -30,7 +30,7 @@
   --bg: #0f1115;
   --fg: #eef0f4;
   --muted: #a3a9b6;
-  --faint: #6c7280;
+  --faint: #858b98;
   --accent: #7c9cff;
   --accent-2: #a9bcff;
   --accent-soft: #1b2340;
@@ -229,6 +229,27 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
   .compare td:first-child { white-space: normal; }
 }
 
+.notes { display: none; }
+
+/* 발표자 화면 (?presenter) */
+.presenter #deck {
+  position: fixed; top: 20px; left: 20px; width: 1280px; height: 720px;
+  transform-origin: top left; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg);
+}
+.presenter .slide { max-width: none; }
+.presenter .controls, .presenter .progress { display: none; }
+.p-panel {
+  position: fixed; top: 20px; right: 20px; bottom: 20px; width: calc(40% - 40px);
+  display: flex; flex-direction: column; gap: 1rem; overflow-y: auto;
+}
+.p-now { color: var(--accent); font-weight: 700; }
+.p-time { font-size: 2.4rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.p-time.late { color: var(--danger); }
+.p-notes { font-size: 1.15rem; line-height: 1.7; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 1rem 1.2rem; flex: 1; }
+.p-notes b { color: var(--accent); }
+.p-next { color: var(--muted); font-weight: 600; }
+.p-help { color: var(--faint); font-size: .85rem; }
+
 @page { size: 1280px 720px; margin: 0; }
 @media print {
   html, body { height: auto; overflow: visible; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -241,6 +262,24 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
   .cover::before { position: absolute; }
   .controls, .progress { display: none; }
 }
+
+/* 큰 화면(1080p 프로젝터 등)에서는 전체를 키우고, 낮은 화면에서는 데모를 줄임 */
+@media screen and (min-width: 1600px) and (min-height: 900px) {
+  html { font-size: 20px; }
+  .slide { max-width: 1560px; }
+  .phone { width: 340px; }
+}
+@media screen and (min-width: 2200px) and (min-height: 1200px) {
+  html { font-size: 26px; }
+  .slide { max-width: 2000px; }
+  .phone { width: 420px; }
+}
+@media screen and (max-height: 820px) and (min-width: 761px) {
+  .phone { gap: .4rem; padding: .9rem; }
+  .phone .item { padding: .4rem .6rem; }
+}
+.presenter .phone { gap: .4rem; padding: .9rem; }
+.presenter .phone .item { padding: .4rem .6rem; }
 
 /* 사용 흐름 데모: 슬라이드가 열릴 때마다 deck.js가 .play를 다시 붙임 */
 .sms {
