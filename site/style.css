@@ -227,7 +227,7 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
 .tier strong { font-size: clamp(1.1rem, 2.1vw, 1.45rem); }
 .tier.t1 { width: 100%; }
 .tier.t2 { width: 86%; }
-.tier.t3 { width: 72%; background: var(--accent); }
+.tier.t3 { width: min(100%, 34rem); background: var(--accent); grid-template-columns: auto 1fr auto; }
 .tier.t3 b, .tier.t3 span, .tier.t3 strong { color: #fff; }
 .pricing { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
 .pricing div { display: grid; gap: .3rem; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: .9rem 1.2rem; }
@@ -278,6 +278,7 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
   .phone { width: 100%; max-width: 320px; }
   .tier { grid-template-columns: 1fr; gap: .15rem; }
   .tier.t2, .tier.t3 { width: 100%; }
+  .tier.t3 { grid-template-columns: 1fr; }
   .pricing { grid-template-columns: 1fr; }
   .checks li { grid-template-columns: 1.6rem 1fr; }
   .checks li > span { grid-column: 2; }
