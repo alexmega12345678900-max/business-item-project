@@ -3,14 +3,17 @@ const counter = document.getElementById('counter');
 const bar = document.getElementById('bar');
 let current = 0;
 
-// data-stage가 있는 슬라이드 상단에 기승전결 표시
-const STAGES = [['기', '문제'], ['승', '원인'], ['전', '해결'], ['결', '가치']];
-slides.filter((s) => s.dataset.stage).forEach((s) => {
+// 본문 슬라이드 상단에 목차 진행 표시 (현재 장 강조)
+const sections = slides.map((s) => s.querySelector('.sec-head')).filter(Boolean)
+  .map((h) => [h.querySelector('.sec-no').textContent, h.querySelector('h2').textContent]);
+slides.forEach((s) => {
+  const h = s.querySelector('.sec-head');
+  if (!h || s.classList.contains('cover')) return;
+  const no = h.querySelector('.sec-no').textContent;
   const ol = document.createElement('ol');
   ol.className = 'stages';
-  ol.setAttribute('aria-label', '발표 단계');
-  ol.innerHTML = STAGES.map(([k, v]) =>
-    `<li class="${k === s.dataset.stage ? 'on' : ''}"><b>${k}</b>${v}</li>`).join('');
+  ol.setAttribute('aria-label', '목차 진행');
+  ol.innerHTML = sections.map(([n, t]) => `<li class="${n === no ? 'on' : ''}"><b>${n}</b>${t}</li>`).join('');
   s.prepend(ol);
 });
 
@@ -63,7 +66,7 @@ function renderPresenter() {
     return c.textContent.replace(/\s+/g, ' ').trim();
   };
   panel.querySelector('.p-now').textContent =
-    `${current + 1} / ${slides.length}${s.dataset.stage ? ` · ${s.dataset.stage}` : ''} · 목표 ${s.querySelector('.notes')?.dataset.time || '—'}`;
+    `${current + 1} / ${slides.length}${s.querySelector('.sec-no') ? ` · ${s.querySelector('.sec-no').textContent}` : ''} · 목표 ${s.querySelector('.notes')?.dataset.time || '—'}`;
   panel.querySelector('.p-notes').innerHTML = s.querySelector('.notes')?.innerHTML || '';
   panel.querySelector('.p-next').textContent = `다음: ${title(next)}`;
   tick();

@@ -100,6 +100,40 @@ h3 { font-size: 1.1rem; margin-bottom: .4rem; }
   width: 60vmax; height: 60vmax; right: -18vmax; top: -22vmax; border-radius: 50%;
   background: radial-gradient(circle, var(--accent-soft) 0%, transparent 65%);
 }
+/* 본문 장 제목: 번호 · 제목 · 핵심 메시지 한 줄 */
+.sec-head { display: flex; align-items: flex-start; gap: clamp(.9rem, 2vw, 1.4rem); }
+.sec-no {
+  font-size: clamp(2.2rem, 4.6vw, 3.4rem); font-weight: 800; line-height: 1; color: var(--accent);
+  letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+  padding-right: clamp(.9rem, 2vw, 1.4rem); border-right: 3px solid var(--accent-soft);
+}
+.sec-head h2 { line-height: 1.1; }
+.key { margin-top: .5rem; color: var(--muted); font-size: clamp(1rem, 1.9vw, 1.35rem); font-weight: 600; line-height: 1.45; }
+
+/* 추진 계획 */
+.timeline { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; font-size: clamp(.95rem, 1.6vw, 1.1rem); line-height: 1.55; }
+.timeline li {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow);
+  border-top: 4px solid var(--accent); padding: 1.1rem 1.2rem; color: var(--muted);
+}
+.timeline li:nth-child(2) { border-top-color: var(--accent-2); }
+.timeline li:nth-child(3) { border-top-color: var(--line); }
+.timeline strong { display: block; color: var(--fg); font-size: 1.1em; margin-bottom: .4rem; }
+.tech { color: var(--muted); font-size: .95rem; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .9rem 1.1rem; line-height: 1.55; }
+@media screen and (max-width: 760px) { .timeline { grid-template-columns: 1fr; } }
+
+/* 목차 */
+.toc { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .7rem 1.6rem; counter-reset: none; }
+.toc li {
+  display: grid; grid-template-columns: 3rem 1fr; align-items: baseline; column-gap: .6rem;
+  padding: .85rem 1.1rem; background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+}
+.toc span { color: var(--accent); font-weight: 800; grid-row: span 2; font-variant-numeric: tabular-nums; }
+.toc b { font-weight: 800; }
+.toc small { color: var(--muted); font-size: .8em; }
+@media screen and (max-width: 760px) { .toc { grid-template-columns: 1fr; } }
+
 /* 표지 오른쪽 장식: D-day 카드 (넓은 화면에서만) */
 .hero {
   position: absolute; right: max(16px, 7vw); top: 50%; transform: translateY(-50%) rotate(-4deg);
@@ -237,7 +271,9 @@ td:first-child { color: var(--muted); font-weight: 600; white-space: nowrap; }
   .cover { padding-top: 12vh; padding-bottom: 96px; }
   .controls { right: 50%; transform: translateX(50%); }
   .stages { top: 2.5vh; }
-  .stages li { font-size: .72rem; padding: .2rem .55rem; }
+  .stages li { font-size: .72rem; padding: .2rem .5rem; }
+  .stages li:not(.on) { font-size: 0; padding: .2rem .45rem; }
+  .stages li:not(.on) b { font-size: .72rem; margin: 0; }
   .split { grid-template-columns: 1fr; gap: 1.6rem; }
   .phone { width: 100%; max-width: 320px; }
   .tier { grid-template-columns: 1fr; gap: .15rem; }
