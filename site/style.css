@@ -161,6 +161,7 @@ h3 { font-size: 1.1rem; margin-bottom: .4rem; }
 .stat .num { font-size: clamp(2.6rem, 5.4vw, 4.2rem); font-weight: 800; color: var(--accent); line-height: 1; letter-spacing: -.02em; }
 .stat .num em { font-style: normal; font-size: .42em; margin-left: .15em; letter-spacing: 0; }
 .stat .label { color: var(--muted); line-height: 1.5; font-size: clamp(.95rem, 1.4vw, 1.05rem); }
+.stat .org { margin-top: auto; color: var(--faint); font-size: .8rem; font-weight: 600; border-top: 1px solid var(--line); padding-top: .5rem; }
 
 /* 표 */
 .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
