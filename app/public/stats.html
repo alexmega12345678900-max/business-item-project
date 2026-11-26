@@ -29,7 +29,7 @@ th { color: var(--muted); font-weight: 600; }
   <section class="card"><h2>한 달에 얼마면 쓸까 (가격 답변)</h2><div class="scroll"><table id="votes"></table></div></section>
 </main>
 <script>
-const COLS = [['visit', '방문'], ['parse', '기한 찾기'], ['add', '등록'], ['cal', '알림 넣기'], ['install_prompt', '홈 화면 추가 시도'], ['share', '공유'], ['apk', '앱 받기'], ['premium_view', '프리미엄 보기'], ['premium_intent', '사전 신청'], ['limit_hit', '무료 한도 도달'], ['checkout', '결제 클릭'], ['pro_on', '프리미엄 켜짐']];
+const COLS = [['visit', '방문'], ['parse', '기한 찾기'], ['add', '등록'], ['cal', '알림 넣기'], ['install_prompt', '홈 화면 추가 시도'], ['share', '공유'], ['apk', '앱 받기'], ['premium_view', '프리미엄 보기'], ['premium_intent', '사전 신청'], ['limit_hit', '무료 한도 도달'], ['checkout', '결제 클릭'], ['pro_on', '프리미엄 켜짐'], ['share_in', '공유로 등록'], ['family_out', '가족에게 보냄'], ['family_in', '가족 목록 받음'], ['ocr', '캡처 등록']];
 const KIND = { trial: '무료체험', sub: '구독', return: '반품', warranty: '보증' };
 const $ = (id) => document.getElementById(id);
 const cell = (tag, text) => { const c = document.createElement(tag); c.textContent = text; return c; };
