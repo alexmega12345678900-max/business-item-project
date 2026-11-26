@@ -25,9 +25,11 @@ th { color: var(--muted); font-weight: 600; }
   <section class="card"><h2>채널별 전환</h2><div class="scroll"><table id="funnel"></table></div></section>
   <section class="card"><h2>날짜별 사람 수</h2><div class="scroll"><table id="days"></table></div></section>
   <section class="card"><h2>등록한 기한 종류</h2><div class="scroll"><table id="kinds"></table></div></section>
+  <section class="card"><h2>수익성 · 프리미엄 지불 의향</h2><div class="scroll"><table id="rev"></table></div><p class="note" id="rev-note"></p></section>
+  <section class="card"><h2>한 달에 얼마면 쓸까 (가격 답변)</h2><div class="scroll"><table id="votes"></table></div></section>
 </main>
 <script>
-const COLS = [['visit', '방문'], ['parse', '기한 찾기'], ['add', '등록'], ['cal', '알림 넣기'], ['install_prompt', '홈 화면 추가 시도'], ['share', '공유'], ['apk', '앱 받기']];
+const COLS = [['visit', '방문'], ['parse', '기한 찾기'], ['add', '등록'], ['cal', '알림 넣기'], ['install_prompt', '홈 화면 추가 시도'], ['share', '공유'], ['apk', '앱 받기'], ['premium_view', '프리미엄 보기'], ['premium_intent', '사전 신청']];
 const KIND = { trial: '무료체험', sub: '구독', return: '반품', warranty: '보증' };
 const $ = (id) => document.getElementById(id);
 const cell = (tag, text) => { const c = document.createElement(tag); c.textContent = text; return c; };
@@ -63,6 +65,30 @@ async function load(key) {
   for (const r of data.byDay) { const ev = (r.ev.startsWith('cal_') || r.ev === 'notif') ? 'cal' : r.ev; days[r.d] ??= {}; days[r.d][ev] = (days[r.d][ev] || 0) + r.u; }
   table($('days'), ['날짜', ...COLS.map((c) => c[1])], Object.entries(days).map(([d, o]) => [d, ...COLS.map(([k]) => String(o[k] || 0))]));
   table($('kinds'), ['종류', '등록 수'], data.byKind.map((r) => [KIND[r.kind] || r.kind || '-', String(r.n)]));
+  // 수익성: 사전 신청률로 첫해 목표 3,000명일 때 예상 매출 계산 (월 1,900원 = 연 22,800원, 연간 19,000원)
+  const P = {};
+  for (const r of data.pro || []) { P[r.ev] ??= {}; P[r.ev][r.kind] = r.u; }
+  const sum = (o) => Object.values(o || {}).reduce((a, b) => a + b, 0);
+  const V = data.visitors || 0, view = sum(P.premium_view), im = (P.premium_intent || {}).m || 0, iy = (P.premium_intent || {}).y || 0, it = im + iy;
+  const rate = V ? it / V : 0;
+  const won = (n) => `${Math.round(n).toLocaleString('ko-KR')}원`;
+  const pct = (n) => `${(n * 100).toFixed(1)}%`;
+  const perUser = it ? (im * 22800 + iy * 19000) / it : 22800;
+  table($('rev'), ['항목', '값'], [
+    ['방문자', `${V}명`],
+    ['프리미엄 페이지 본 사람', `${view}명 (${V ? pct(view / V) : '0%'})`],
+    ['사전 신청 (매달 / 1년)', `${it}명 (${im} / ${iy})`],
+    ['방문자 대비 신청률', pct(rate)],
+    ['신청률 그대로면 · 3,000명일 때 연 매출', won(3000 * rate * perUser)],
+    ['신청자 절반만 결제하면', won(3000 * rate * 0.5 * perUser)],
+    ['기획서 기준 (전환 2%)', won(3000 * 0.02 * 22800)],
+    ['월 서버비 회수에 필요한 유료 사용자', '4명'],
+  ]);
+  $('rev-note').textContent = '사전 신청은 결제가 아니라 "쓰겠다"는 의사 표시라서 실제 결제보다 높게 나와요. 그래서 절반만 결제하는 경우도 같이 보여 줘요.';
+  const VOTE = [['0', '무료만'], ['990', '990원'], ['1900', '1,900원'], ['2900', '2,900원'], ['4900', '4,900원 이상']];
+  const pv = P.price_vote || {}, vt = sum(pv);
+  const paying = VOTE.slice(2).reduce((a, [k]) => a + (pv[k] || 0), 0);
+  table($('votes'), ['가격', '사람 수', '비율'], [...VOTE.map(([k, n]) => [n, String(pv[k] || 0), vt ? pct((pv[k] || 0) / vt) : '-']), ['1,900원 이상 낼 의향', String(paying), vt ? pct(paying / vt) : '-']]);
   $('msg').textContent = '숫자는 사람 수(같은 사람이 여러 번 해도 1명)예요. 괄호는 방문자 대비 비율이에요. 합계는 채널별 합이라 한 사람이 두 채널로 들어오면 두 번 세져요.';
 }
 

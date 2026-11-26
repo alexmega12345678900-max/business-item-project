@@ -158,6 +158,7 @@ function render() {
   if (soon) {
     a.textContent = `🔔 "${soon.name}" ${TYPES[soon.type].label}까지 ${label(dday(fromIso(soon.end)))}. ${soon.type === 'return' ? '반품하려면 지금 신청하세요.' : soon.type === 'warranty' ? '무상 수리가 필요하면 지금 신청하세요.' : '계속 쓸 게 아니면 지금 해지하세요.'}`;
   }
+  $('pro-tip').hidden = sorted.length < 3;
   $('ios-tip').hidden = native || !(isIOS && !standalone && sorted.length > 0);
 }
 

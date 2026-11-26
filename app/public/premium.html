@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>놓침제로 프리미엄 · 월 1,900원</title>
+<meta name="description" content="안 쓰는 구독 하나만 막아도 1년에 약 4만 원 이득. 사진으로 등록, 기한 무제한, 연간 절약 리포트, 가족과 함께 관리.">
+<meta name="theme-color" content="#0f7a5c">
+<meta property="og:title" content="놓침제로 프리미엄 · 월 1,900원">
+<meta property="og:image" content="https://nochimzero.pages.dev/og.png">
+<link rel="icon" href="/icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="/app.css">
+<style>
+.badge { justify-self: start; display: inline-block; font-size: .8rem; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: .15rem .6rem; }
+.plans { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.plan { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 6px; align-content: start; background: var(--bg); }
+.plan.pro { border: 2px solid var(--accent); background: var(--card); }
+.plan h3 { font-size: .95rem; color: var(--muted); }
+.plan.pro h3 { color: var(--accent); }
+.price { font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em; }
+.plan ul { list-style: none; display: grid; gap: 4px; font-size: .9rem; }
+.plan li::before { content: "✓ "; color: var(--accent); font-weight: 800; }
+.toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.toggle button[aria-pressed="true"] { border: 2px solid var(--accent); color: var(--accent); }
+.save { font-size: .8rem; color: var(--danger); font-weight: 700; }
+.calc-box { display: grid; gap: 4px; font-size: .95rem; }
+.calc-box div { display: flex; justify-content: space-between; }
+.calc-box .sum { border-top: 1px solid var(--line); padding-top: 6px; font-weight: 800; color: var(--accent); }
+.votes { display: flex; flex-wrap: wrap; gap: 6px; }
+.votes button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.done-msg { font-weight: 700; color: var(--accent); }
+details { border-top: 1px solid var(--line); padding-top: 10px; }
+summary { font-weight: 700; cursor: pointer; }
+details p { color: var(--muted); font-size: .92rem; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">놓침제로</a>
+  <a class="ghost btnlike" href="/">무료로 쓰기</a>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <span class="badge">프리미엄 · 준비 중</span>
+    <h1>안 쓰는 구독 하나만 막아도<br><em>1년에 약 4만 원 이득</em></h1>
+    <p>기본 기능은 계속 무료예요. 더 편하게 챙기고 싶은 분을 위해 프리미엄을 준비하고 있어요. 지금은 모든 기능을 무료로 쓸 수 있어요.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-plan">
+    <h2 id="h-plan">무료와 프리미엄</h2>
+    <div class="plans">
+      <div class="plan">
+        <h3>무료</h3>
+        <span class="price">0원</span>
+        <ul><li>문자 붙여넣기 등록</li><li>기한 목록·D-day</li><li>3일 전·하루 전 알림</li><li>해지·반품 방법 찾기</li></ul>
+      </div>
+      <div class="plan pro">
+        <h3>프리미엄</h3>
+        <span class="price" id="price">월 1,900원</span>
+        <span class="save" id="save" hidden>2개월 무료 (17% 할인)</span>
+        <ul><li>무료 기능 전부</li><li>결제 화면 캡처·영수증 사진으로 등록</li><li>기한 무제한</li><li>연간 절약 리포트</li><li>가족과 함께 관리</li></ul>
+      </div>
+    </div>
+    <div class="toggle" role="group" aria-label="결제 주기">
+      <button type="button" id="t-m" aria-pressed="true">매달 1,900원</button>
+      <button type="button" id="t-y" aria-pressed="false">1년 19,000원</button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-calc">
+    <h2 id="h-calc">정말 이득일까?</h2>
+    <div class="calc-box">
+      <div><span>안 쓰는 구독 하나 제때 해지</span><b>+ 62,340원</b></div>
+      <div><span>프리미엄 1년 이용료</span><b id="cost">− 22,800원</b></div>
+      <div class="sum"><span>1년 이득</span><span id="gain">약 39,540원</span></div>
+    </div>
+    <p class="note">구독 하나 월 약 5,195원 기준 (OTT 유료 이용자 월 10,909원 ÷ 평균 2.1개, 문체부·콘진원 2025)</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-pre">
+    <h2 id="h-pre">출시되면 먼저 써 보기</h2>
+    <p class="muted">지금 신청해도 결제되지 않아요. 이름·연락처도 받지 않아요. 출시되면 놓침제로 첫 화면에서 알려 드려요.</p>
+    <button class="primary wide" id="pre">프리미엄 사전 신청 (<span id="pre-plan">매달 1,900원</span>)</button>
+    <p class="done-msg" id="pre-done" hidden>신청 고마워요! 출시되면 첫 화면에서 알려 드릴게요.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-vote">
+    <h2 id="h-vote">한 달에 얼마면 쓰시겠어요?</h2>
+    <p class="muted">가격을 정하는 데 참고해요. 하나만 골라 주세요.</p>
+    <div class="votes" id="votes">
+      <button type="button" data-v="0">무료만 쓸래요</button>
+      <button type="button" data-v="990">990원</button>
+      <button type="button" data-v="1900">1,900원</button>
+      <button type="button" data-v="2900">2,900원</button>
+      <button type="button" data-v="4900">4,900원 이상</button>
+    </div>
+    <p class="done-msg" id="vote-done" hidden>답해 주셔서 고마워요.</p>
+  </section>
+
+  <section class="card">
+    <details><summary>지금 결제되나요?</summary><p>아니요. 프리미엄은 준비 중이라 결제 기능이 없어요. 사전 신청은 "출시되면 쓰겠다"는 표시만 남겨요.</p></details>
+    <details><summary>무료로도 계속 쓸 수 있나요?</summary><p>네. 붙여넣기 등록, 기한 목록, 알림, 해지·반품 방법 찾기는 계속 무료예요.</p></details>
+    <details><summary>내 문자는 어디에 저장되나요?</summary><p>붙여 넣은 문자는 서버로 보내지 않고 이 폰에만 저장돼요. 사전 신청과 가격 답변도 익명으로만 남아요.</p></details>
+  </section>
+
+  <footer class="foot"><p>상명대학교 디지털창업서비스기획과마케팅 1조</p></footer>
+</main>
+
+<script>
+// 프리미엄 지불 의향 측정: 결제 없이 사전 신청(월/연)과 적정 가격 답변만 익명으로 기록
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+const cap = window.Capacitor;
+const native = !!(cap && cap.isNativePlatform && cap.isNativePlatform());
+const API = native ? 'https://nochimzero.pages.dev' : '';
+const params = new URLSearchParams(location.search);
+const fromParam = (params.get('from') || '').replace(/[^\w\-가-힣]/g, '').slice(0, 40);
+if (fromParam) store.set('nz-src', fromParam);
+let uid = store.get('nz-uid', null);
+if (!uid) { uid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}${Math.random().toString(36).slice(2)}`; store.set('nz-uid', uid); }
+const src = store.get('nz-src', native ? `app_${cap.getPlatform()}` : 'direct');
+const testing = store.get('nz-test', false);
+function track(ev, kind = '') {
+  if (testing) return;
+  const body = JSON.stringify({ ev, kind, uid, src });
+  try { if (!(navigator.sendBeacon && navigator.sendBeacon(`${API}/api/e`, body))) fetch(`${API}/api/e`, { method: 'POST', body, keepalive: true }).catch(() => {}); } catch (e) {}
+}
+
+let plan = 'm';
+function setPlan(p) {
+  plan = p;
+  $('t-m').setAttribute('aria-pressed', p === 'm');
+  $('t-y').setAttribute('aria-pressed', p === 'y');
+  $('price').textContent = p === 'm' ? '월 1,900원' : '연 19,000원';
+  $('save').hidden = p === 'm';
+  $('pre-plan').textContent = p === 'm' ? '매달 1,900원' : '1년 19,000원';
+  $('cost').textContent = p === 'm' ? '− 22,800원' : '− 19,000원';
+  $('gain').textContent = p === 'm' ? '약 39,540원' : '약 43,340원';
+}
+$('t-m').onclick = () => setPlan('m');
+$('t-y').onclick = () => setPlan('y');
+
+function showPre() { $('pre').hidden = true; $('pre-done').hidden = false; }
+if (store.get('nz-premium', null)) showPre();
+$('pre').onclick = () => { track('premium_intent', plan); store.set('nz-premium', plan); showPre(); };
+
+const voted = store.get('nz-vote', null);
+for (const b of document.querySelectorAll('#votes button')) {
+  if (b.dataset.v === voted) b.setAttribute('aria-pressed', 'true');
+  b.onclick = () => {
+    if (store.get('nz-vote', null) !== b.dataset.v) track('price_vote', b.dataset.v);
+    store.set('nz-vote', b.dataset.v);
+    document.querySelectorAll('#votes button').forEach((x) => x.setAttribute('aria-pressed', x === b));
+    $('vote-done').hidden = false;
+  };
+}
+if (voted) $('vote-done').hidden = false;
+if (params.toString()) history.replaceState(null, '', location.pathname);
+track('premium_view', params.get('via') || '');
+</script>
+</body>
+</html>
