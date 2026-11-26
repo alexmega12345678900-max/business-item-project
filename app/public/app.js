@@ -403,7 +403,7 @@ for (const [k, v] of samples()) {
 }
 
 let deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; $('install').hidden = false; });
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; $('install').hidden = !$('apk').hidden; });
 window.addEventListener('appinstalled', () => { $('install').hidden = true; track('installed'); });
 if (isIOS && !standalone && !native) $('install').hidden = false;
 $('install').onclick = async () => {
@@ -440,7 +440,7 @@ if (native) {
 }
 // 안드로이드 브라우저로 들어온 사람에게 앱 받기 버튼 보여 주기
 const apk = $('apk');
-if (apk && !native && /Android/i.test(navigator.userAgent)) { apk.hidden = false; apk.onclick = () => track('apk'); }
+if (apk && !native && /Android/i.test(navigator.userAgent)) { apk.hidden = false; apk.onclick = () => track('apk'); $('install').hidden = true; }
 
 track('visit', native ? platform : standalone ? 'pwa' : '');
 render();
