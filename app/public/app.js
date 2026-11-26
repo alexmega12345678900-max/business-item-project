@@ -63,7 +63,7 @@ function parse(text) {
 
   const amount = (t.match(/(?:연|월)?\s*([\d,]{3,})\s*원/) || [])[0]?.trim() || '';
   const head = t.replace(/^\s*(?:\[[^\]]*\]\s*)+/, '').replace(/^(?:주문하신|고객님의|고객님)\s*/, '');
-  let name = (head.match(/^([가-힣A-Za-z+ ]{2,20}?)(?=\s*(?:\d|월\s|연\s|한\s*달|두\s*달|일주일|정기|구독|구매|무료|결제|배송|가\s|이\s))/) || [])[1]?.trim() || '';
+  let name = (head.match(/^([가-힣A-Za-z+ ]{2,20}?)(?=\s*(?:\d|월\s|연\s|한\s*달|두\s*달|일주일|정기|구독|구매|무료|결제|배송|가\s(?!\d)|이\s(?!\d)))/) || [])[1]?.trim() || '';
   if (!name) name = TYPES[type].label;
 
   const def = TYPES[type];
@@ -175,6 +175,7 @@ function render() {
   }
   $('pro-tip').hidden = isPro() || sorted.length < 3;
   renderSaved();
+  $('family').hidden = !sorted.length;
   $('pro-card').hidden = isPro();
   $('pro-badge').hidden = !isPro();
   $('ios-tip').hidden = native || !(isIOS && !standalone && sorted.length > 0);
@@ -301,7 +302,7 @@ $('f-type').addEventListener('change', () => {
   const d = TYPES[$('f-type').value]; $('f-n').value = d.n; $('f-unit').value = d.unit; preview();
 });
 $('add').onclick = () => {
-  if (!isPro() && items.filter((x) => !x.done).length >= FREE_LIMIT) { track('limit_hit'); $('limit').showModal(); return; }
+  if (!isPro() && items.filter((x) => !x.done).length >= FREE_LIMIT) { track('limit_hit'); $('limit-title').textContent = '무료로는 기한 5개까지 챙길 수 있어요'; $('limit').showModal(); return; }
   const end = preview();
   const type = $('f-type').value;
   const it = {
@@ -315,6 +316,84 @@ $('add').onclick = () => {
   if (native) scheduleNotif(it); else openCal(it);
 };
 $('cancel').onclick = () => $('confirm').classList.remove('show');
+
+// 프리미엄: 결제 화면 캡처를 올리면 글자를 읽어 붙여넣기 칸에 채우고 바로 기한 찾기
+function shrink(file) {
+  return new Promise((ok, no) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, 1280 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); ok(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = no; img.src = URL.createObjectURL(file);
+  });
+}
+const lockDialog = (title, body) => { $('limit-title').textContent = title; $('limit-body').textContent = body; $('limit').showModal(); };
+$('photo').addEventListener('click', (e) => {
+  if (!isPro()) { e.preventDefault(); track('ocr_lock'); lockDialog('캡처로 등록은 프리미엄 기능이에요', '문자를 복사하기 어려운 앱 결제 화면도 캡처만 올리면 기한을 찾아 줘요. 프리미엄은 월 1,900원이에요.'); }
+});
+
+// 프리미엄: 진행 중인 기한을 링크 하나로 가족에게 보내기 (서버에 저장하지 않고 링크 안에만 담김)
+const b64 = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
+$('family').onclick = async () => {
+  if (!isPro()) { track('family_lock'); lockDialog('가족과 함께 관리는 프리미엄 기능이에요', '부모님 휴대폰 약정, 가족 OTT 구독처럼 같이 챙길 기한을 링크 하나로 보내요. 프리미엄은 월 1,900원이에요.'); return; }
+  const list = items.filter((x) => !x.done).map(({ name, type, end, amount }) => [name, type, end, amount || '']);
+  const url = `${SITE}/#share=${b64(JSON.stringify(list))}`;
+  const text = `놓침제로에서 챙기는 기한 ${list.length}개를 보내요. 열면 내 목록에 넣을 수 있어요.`;
+  track('family_out', String(list.length));
+  if (navigator.share) { try { await navigator.share({ title: '놓침제로 기한 목록', text, url }); } catch (e) {} }
+  else { try { await navigator.clipboard.writeText(`${text} ${url}`); $('family').textContent = '링크를 복사했어요'; } catch (e) {} }
+};
+let incoming = [];
+function readShare() {
+  try {
+    const m = location.hash.match(/share=([\w-]+)/);
+    if (!m) return;
+    incoming = JSON.parse(unb64(m[1])).filter((x) => Array.isArray(x) && TYPES[x[1]] && /^\d{4}-\d{2}-\d{2}$/.test(x[2])).slice(0, 50)
+      .map(([name, type, end, amount]) => ({ name: String(name).slice(0, 40), type, end, amount: String(amount).slice(0, 20) }));
+    history.replaceState(null, '', location.pathname);
+  } catch (e) { incoming = []; }
+  if (!incoming.length) return;
+  $('import-title').textContent = `가족이 보낸 기한 ${incoming.length}개`;
+  $('import-list').innerHTML = '';
+  for (const x of incoming) { const li = document.createElement('li'); li.textContent = `${x.name} · ${TYPES[x.type].label} ${md(fromIso(x.end))}`; $('import-list').append(li); }
+  setTimeout(() => $('import').showModal(), 300);
+}
+readShare();
+window.addEventListener('hashchange', readShare);
+$('import-ok').onclick = (e) => {
+  e.preventDefault();
+  let n = 0;
+  for (const x of incoming) {
+    if (items.some((y) => !y.done && y.name === x.name && y.end === x.end)) continue;
+    items.push({ id: uid.slice(0, 8) + Date.now().toString(36) + n, ...x, cal: false }); n++;
+  }
+  save(); track('family_in', String(n)); $('import').close(); render();
+};
+$('photo').addEventListener('change', async () => {
+  const f = $('photo').files[0]; $('photo').value = '';
+  if (!f) return;
+  const msg = $('photo-msg'); msg.hidden = false; msg.textContent = '캡처에서 글자를 읽는 중이에요… (사진은 저장하지 않아요)';
+  try {
+    const image = await shrink(f);
+    const r = await fetch(`${API}/api/ocr`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image, key: (proInfo() || {}).key }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.text) { msg.textContent = r.status === 402 ? '프리미엄 확인이 안 돼요. 프리미엄 페이지에서 키를 다시 넣어 주세요.' : '글자를 못 읽었어요. 문자를 복사해서 붙여 넣어 주세요.'; return; }
+    msg.hidden = true; $('text').value = d.text; track('ocr'); $('read').click();
+  } catch (e) { msg.textContent = '사진을 열지 못했어요. 다른 캡처로 해 보세요.'; }
+});
+
+// 다른 앱에서 공유로 보낸 글: 웹(홈 화면 앱)은 주소의 text, 안드로이드 앱은 NzAndroid로 받음
+window.nzShared = (t) => {
+  if (!t) return;
+  $('text').value = String(t).slice(0, 2000); track('share_in', native ? platform : 'web');
+  setTimeout(() => $('read').click(), 200);
+};
+nzShared([params.get('title'), params.get('text')].filter(Boolean).join(' '));
+try { if (window.NzAndroid) nzShared(window.NzAndroid.takeShared()); } catch (e) {}
 
 for (const [k, v] of samples()) {
   const b = document.createElement('button');

@@ -6,3 +6,6 @@ compatibility_date = "2026-11-01"
 binding = "DB"
 database_name = "nochimzero"
 database_id = "b6b5dfab-1233-44e4-9460-b1688333f070"
+
+[ai]
+binding = "AI"

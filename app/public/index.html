@@ -42,7 +42,12 @@
     <h2 id="h-in"><span class="step">1</span>결제 문자 붙여넣기</h2>
     <textarea id="text" placeholder="결제 문자, 주문 확인 메일 내용을 붙여 넣으세요"></textarea>
     <div class="samples" id="samples"><span>예시로 해 보기</span></div>
-    <button class="primary wide" id="read">기한 찾기</button>
+    <div class="row">
+      <button class="primary" id="read">기한 찾기</button>
+      <label class="btnlike photo" for="photo">캡처로 등록 <span class="pro-badge">프리미엄</span></label>
+      <input id="photo" type="file" accept="image/*" hidden>
+    </div>
+    <p class="note" id="photo-msg" hidden></p>
 
     <div class="confirm" id="confirm" aria-live="polite">
       <p class="found" id="found"></p>
@@ -68,6 +73,7 @@
     <h2 id="h-list"><span class="step">2</span>다가오는 기한</h2>
     <p class="tip warn" id="alert" hidden></p>
     <ul class="list" id="list"></ul>
+    <button class="wide" id="family" hidden>가족에게 이 목록 보내기 <span class="pro-badge">프리미엄</span></button>
     <p class="tip" id="pro-tip" hidden>기한이 많아졌네요. 프리미엄은 캡처 사진으로 한 번에 등록하고, 1년 동안 아낀 돈도 보여 줘요. <a href="/premium.html?via=list">미리 보기</a></p>
     <p class="tip" id="ios-tip" hidden>아이폰은 Safari 아래 <b>공유 버튼 → 홈 화면에 추가</b>를 하면 앱처럼 열려요. 목록도 더 오래 안전하게 남아요.</p>
   </section>
@@ -120,9 +126,18 @@
 
 <dialog id="limit">
   <form method="dialog" class="sheet">
-    <h3>무료로는 기한 5개까지 챙길 수 있어요</h3>
-    <p class="muted">처리한 기한은 <b>✓ 해지했어요</b>를 눌러 옮기면 자리가 생겨요. 더 많이 챙기려면 프리미엄(월 1,900원)을 써 보세요.</p>
+    <h3 id="limit-title">무료로는 기한 5개까지 챙길 수 있어요</h3>
+    <p class="muted" id="limit-body">처리한 기한은 <b>✓ 해지했어요</b>를 눌러 옮기면 자리가 생겨요. 더 많이 챙기려면 프리미엄(월 1,900원)을 써 보세요.</p>
     <a class="primary wide btnlike" href="/premium.html?via=limit">프리미엄 보기</a>
+    <button class="wide" value="close">닫기</button>
+  </form>
+</dialog>
+
+<dialog id="import">
+  <form method="dialog" class="sheet">
+    <h3 id="import-title"></h3>
+    <ul class="saved-detail" id="import-list"></ul>
+    <button class="primary wide" id="import-ok">내 목록에 추가</button>
     <button class="wide" value="close">닫기</button>
   </form>
 </dialog>
