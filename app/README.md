@@ -53,7 +53,7 @@ DB 구조는 `schema.sql`.
 cd app
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 npm run apk          # 안드로이드: public/nochimzero.apk까지 갱신
-npx cap sync ios     # 아이폰: 그다음 npx cap open ios 로 Xcode에서 실행
+npm run ios          # 아이폰: Xcode가 열리면 폰 연결 후 실행(▶)
 ```
 
 웹을 고친 뒤에는 `npm run apk` → `wrangler pages deploy` 순서로 하면 사이트와 APK가 같이 갱신됩니다.

@@ -4,7 +4,8 @@
   "private": true,
   "description": "놓침제로 앱 (웹 + 안드로이드 + 아이폰)",
   "scripts": {
-    "sync": "cap sync",
+    "sync": "cap sync && rm -f android/app/src/main/assets/public/nochimzero.apk ios/App/App/public/nochimzero.apk",
+    "ios": "cap sync ios && rm -f ios/App/App/public/nochimzero.apk && cap open ios",
     "apk": "cap sync android && rm -f android/app/src/main/assets/public/nochimzero.apk && cd android && ./gradlew assembleDebug && cp app/build/outputs/apk/debug/app-debug.apk ../public/nochimzero.apk"
   },
   "dependencies": {
