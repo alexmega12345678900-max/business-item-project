@@ -22,7 +22,7 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">놓침제로</a>
+  <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">놓침제로<span class="pro-badge" id="pro-badge" hidden>프리미엄</span></a>
   <button class="ghost" id="install" hidden>홈 화면에 추가</button>
 </header>
 
@@ -72,10 +72,17 @@
     <p class="tip" id="ios-tip" hidden>아이폰은 Safari 아래 <b>공유 버튼 → 홈 화면에 추가</b>를 하면 앱처럼 열려요. 목록도 더 오래 안전하게 남아요.</p>
   </section>
 
-  <a class="card pro-card" href="/premium.html?via=card">
-    <span class="pro-badge">프리미엄 · 준비 중</span>
+  <section class="card" id="saved" aria-labelledby="h-saved" hidden>
+    <h2 id="h-saved"><span class="step">3</span>올해 아낀 돈</h2>
+    <p class="saved-total"><b id="saved-total"></b> <span class="muted" id="saved-count"></span></p>
+    <p class="tip" id="saved-lock" hidden>얼마를 아꼈는지, 달마다 얼마였는지는 프리미엄에서 보여 드려요. <a href="/premium.html?via=report">프리미엄 보기</a></p>
+    <ul class="saved-detail" id="saved-detail"></ul>
+  </section>
+
+  <a class="card pro-card" id="pro-card" href="/premium.html?via=card">
+    <span class="pro-badge">프리미엄</span>
     <b>월 1,900원으로 더 편하게</b>
-    <span class="muted">캡처 사진 등록 · 기한 무제한 · 연간 절약 리포트 · 가족 관리</span>
+    <span class="muted">기한 무제한 · 올해 아낀 돈 리포트</span>
   </a>
 
   <section class="share">
@@ -96,6 +103,26 @@
     <a class="primary wide" id="cal-ics" href="#">아이폰·맥 캘린더에 넣기</a>
     <a class="wide btnlike" id="cal-google" href="#" target="_blank" rel="noopener">구글 캘린더에 넣기</a>
     <p class="note" id="cal-note">아이폰 캘린더는 3일 전·하루 전 오전 9시에 알림이 울려요. 구글 캘린더는 캘린더 기본 알림 설정을 따라요.</p>
+    <button class="wide" value="close">닫기</button>
+  </form>
+</dialog>
+
+<dialog id="done">
+  <form method="dialog" class="sheet">
+    <h3 id="done-title"></h3>
+    <p class="muted">이걸로 아낀 돈을 적어 주세요. 결제될 뻔한 금액이나 환불받은 금액이면 돼요.</p>
+    <label for="done-amt">아낀 돈 (원)</label>
+    <input id="done-amt" type="number" min="0" inputmode="numeric" placeholder="예) 13500">
+    <button class="primary wide" id="done-ok">처리 완료로 옮기기</button>
+    <button class="wide" value="close">취소</button>
+  </form>
+</dialog>
+
+<dialog id="limit">
+  <form method="dialog" class="sheet">
+    <h3>무료로는 기한 5개까지 챙길 수 있어요</h3>
+    <p class="muted">처리한 기한은 <b>✓ 해지했어요</b>를 눌러 옮기면 자리가 생겨요. 더 많이 챙기려면 프리미엄(월 1,900원)을 써 보세요.</p>
+    <a class="primary wide btnlike" href="/premium.html?via=limit">프리미엄 보기</a>
     <button class="wide" value="close">닫기</button>
   </form>
 </dialog>

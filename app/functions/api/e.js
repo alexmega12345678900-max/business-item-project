@@ -1,4 +1,4 @@
-const EVENTS = new Set(['visit', 'parse', 'add', 'delete', 'cal_ics', 'cal_google', 'guide', 'install_prompt', 'installed', 'share', 'notif', 'apk', 'premium_view', 'premium_intent', 'price_vote']);
+const EVENTS = new Set(['visit', 'parse', 'add', 'delete', 'cal_ics', 'cal_google', 'guide', 'install_prompt', 'installed', 'share', 'notif', 'apk', 'premium_view', 'premium_intent', 'price_vote', 'done', 'limit_hit', 'checkout', 'pro_on']);
 const clean = (v, n) => String(v ?? '').replace(/[^\w\-가-힣]/g, '').slice(0, n);
 
 // 앱(capacitor://localhost, https://localhost)에서도 기록을 보낼 수 있게 허용

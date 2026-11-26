@@ -43,9 +43,9 @@ details p { color: var(--muted); font-size: .92rem; margin-top: 6px; }
 
 <main class="wrap">
   <section class="hero">
-    <span class="badge">프리미엄 · 준비 중</span>
+    <span class="badge" id="badge">프리미엄</span>
     <h1>안 쓰는 구독 하나만 막아도<br><em>1년에 약 4만 원 이득</em></h1>
-    <p>기본 기능은 계속 무료예요. 더 편하게 챙기고 싶은 분을 위해 프리미엄을 준비하고 있어요. 지금은 모든 기능을 무료로 쓸 수 있어요.</p>
+    <p>기본 기능은 계속 무료예요. 챙길 게 많은 분, 얼마나 아꼈는지 보고 싶은 분을 위한 요금제예요.</p>
   </section>
 
   <section class="card" aria-labelledby="h-plan">
@@ -54,18 +54,14 @@ details p { color: var(--muted); font-size: .92rem; margin-top: 6px; }
       <div class="plan">
         <h3>무료</h3>
         <span class="price">0원</span>
-        <ul><li>문자 붙여넣기 등록</li><li>기한 목록·D-day</li><li>3일 전·하루 전 알림</li><li>해지·반품 방법 찾기</li></ul>
+        <ul><li>문자 붙여넣기 등록</li><li>진행 중인 기한 5개까지</li><li>3일 전·하루 전 알림</li><li>해지·반품 방법 찾기</li></ul>
       </div>
       <div class="plan pro">
         <h3>프리미엄</h3>
         <span class="price" id="price">월 1,900원</span>
-        <span class="save" id="save" hidden>2개월 무료 (17% 할인)</span>
-        <ul><li>무료 기능 전부</li><li>결제 화면 캡처·영수증 사진으로 등록</li><li>기한 무제한</li><li>연간 절약 리포트</li><li>가족과 함께 관리</li></ul>
+        <ul><li>무료 기능 전부</li><li>기한 무제한</li><li>올해 아낀 돈 리포트 (달마다)</li></ul>
+        <span class="note">곧 추가: 결제 화면 캡처로 등록, 가족과 함께 관리</span>
       </div>
-    </div>
-    <div class="toggle" role="group" aria-label="결제 주기">
-      <button type="button" id="t-m" aria-pressed="true">매달 1,900원</button>
-      <button type="button" id="t-y" aria-pressed="false">1년 19,000원</button>
     </div>
   </section>
 
@@ -79,11 +75,25 @@ details p { color: var(--muted); font-size: .92rem; margin-top: 6px; }
     <p class="note">구독 하나 월 약 5,195원 기준 (OTT 유료 이용자 월 10,909원 ÷ 평균 2.1개, 문체부·콘진원 2025)</p>
   </section>
 
-  <section class="card" aria-labelledby="h-pre">
-    <h2 id="h-pre">출시되면 먼저 써 보기</h2>
-    <p class="muted">지금 신청해도 결제되지 않아요. 이름·연락처도 받지 않아요. 출시되면 놓침제로 첫 화면에서 알려 드려요.</p>
-    <button class="primary wide" id="pre">프리미엄 사전 신청 (<span id="pre-plan">매달 1,900원</span>)</button>
-    <p class="done-msg" id="pre-done" hidden>신청 고마워요! 출시되면 첫 화면에서 알려 드릴게요.</p>
+  <section class="card" aria-labelledby="h-buy" id="buy">
+    <h2 id="h-buy">프리미엄 시작하기</h2>
+    <div id="buy-live" hidden>
+      <p class="muted">결제는 Polar(해외 결제 대행사)에서 카드로 해요. 매달 자동 결제되고, 언제든 해지할 수 있어요. 결제가 끝나면 메일과 결제 완료 화면에 <b>라이선스 키</b>가 나와요.</p>
+      <a class="primary wide btnlike" id="checkout" href="#" target="_blank" rel="noopener">월 1,900원으로 시작하기</a>
+    </div>
+    <div id="buy-soon">
+      <p class="muted">결제 연결을 마무리하고 있어요. 먼저 신청해 두면 열리는 대로 첫 화면에서 알려 드려요. 지금은 결제되지 않아요.</p>
+      <button class="primary wide" id="pre">프리미엄 사전 신청</button>
+      <p class="done-msg" id="pre-done" hidden>신청 고마워요! 열리면 첫 화면에서 알려 드릴게요.</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-key">
+    <h2 id="h-key">구매한 키 넣기</h2>
+    <p class="muted" id="key-msg">결제 후 받은 라이선스 키를 넣으면 이 폰에서 프리미엄이 켜져요.</p>
+    <div class="row" id="key-row"><input id="key" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" autocomplete="off" autocapitalize="characters" style="flex:1;min-width:0"><button class="primary" id="key-ok">확인</button></div>
+    <p class="done-msg" id="key-done" hidden>프리미엄이 켜졌어요. <a href="/">놓침제로로 돌아가기</a></p>
+    <a class="note" id="portal" href="#" target="_blank" rel="noopener" hidden>구독 해지·영수증 보기</a>
   </section>
 
   <section class="card" aria-labelledby="h-vote">
@@ -100,9 +110,10 @@ details p { color: var(--muted); font-size: .92rem; margin-top: 6px; }
   </section>
 
   <section class="card">
-    <details><summary>지금 결제되나요?</summary><p>아니요. 프리미엄은 준비 중이라 결제 기능이 없어요. 사전 신청은 "출시되면 쓰겠다"는 표시만 남겨요.</p></details>
+    <details><summary>해지는 어떻게 하나요?</summary><p>결제 메일의 링크나 이 페이지의 "구독 해지·영수증 보기"에서 언제든 해지할 수 있어요. 해지하면 다음 결제일부터 무료로 돌아가요.</p></details>
+    <details><summary>환불되나요?</summary><p>결제 후 7일 안에 프리미엄 기능을 쓰지 않았다면 전액 환불해 드려요. 결제 메일에 답장하거나 구독 관리 화면에서 요청해 주세요.</p></details>
     <details><summary>무료로도 계속 쓸 수 있나요?</summary><p>네. 붙여넣기 등록, 기한 목록, 알림, 해지·반품 방법 찾기는 계속 무료예요.</p></details>
-    <details><summary>내 문자는 어디에 저장되나요?</summary><p>붙여 넣은 문자는 서버로 보내지 않고 이 폰에만 저장돼요. 사전 신청과 가격 답변도 익명으로만 남아요.</p></details>
+    <details><summary>내 문자는 어디에 저장되나요?</summary><p>붙여 넣은 문자는 서버로 보내지 않고 이 폰에만 저장돼요. 결제 정보는 Polar가 처리하고, 놓침제로는 카드 번호를 받지 않아요.</p></details>
   </section>
 
   <footer class="foot"><p>상명대학교 디지털창업서비스기획과마케팅 1조</p></footer>
@@ -131,23 +142,37 @@ function track(ev, kind = '') {
   try { if (!(navigator.sendBeacon && navigator.sendBeacon(`${API}/api/e`, body))) fetch(`${API}/api/e`, { method: 'POST', body, keepalive: true }).catch(() => {}); } catch (e) {}
 }
 
-let plan = 'm';
-function setPlan(p) {
-  plan = p;
-  $('t-m').setAttribute('aria-pressed', p === 'm');
-  $('t-y').setAttribute('aria-pressed', p === 'y');
-  $('price').textContent = p === 'm' ? '월 1,900원' : '연 19,000원';
-  $('save').hidden = p === 'm';
-  $('pre-plan').textContent = p === 'm' ? '매달 1,900원' : '1년 19,000원';
-  $('cost').textContent = p === 'm' ? '− 22,800원' : '− 19,000원';
-  $('gain').textContent = p === 'm' ? '약 39,540원' : '약 43,340원';
-}
-$('t-m').onclick = () => setPlan('m');
-$('t-y').onclick = () => setPlan('y');
-
 function showPre() { $('pre').hidden = true; $('pre-done').hidden = false; }
 if (store.get('nz-premium', null)) showPre();
-$('pre').onclick = () => { track('premium_intent', plan); store.set('nz-premium', plan); showPre(); };
+$('pre').onclick = () => { track('premium_intent', 'm'); store.set('nz-premium', 'm'); showPre(); };
+
+// 결제 링크는 서버 설정에서 받아옴 (아직 없으면 사전 신청만 보여 줌)
+fetch(`${API}/api/config`).then((r) => r.json()).then((c) => {
+  if (c.checkout) {
+    $('buy-live').hidden = false; $('buy-soon').hidden = true;
+    $('checkout').href = `${c.checkout}${c.checkout.includes('?') ? '&' : '?'}reference_id=${encodeURIComponent(uid)}`;
+    $('checkout').onclick = () => track('checkout', src);
+  }
+  if (c.portal) { $('portal').href = c.portal; $('portal').hidden = false; }
+}).catch(() => {});
+
+function showPro() { $('key-row').hidden = true; $('key-done').hidden = false; $('badge').textContent = '프리미엄 사용 중'; }
+const pro = store.get('nz-pro', null);
+if (pro && pro.valid) showPro();
+$('key-ok').onclick = async () => {
+  const key = $('key').value.trim();
+  if (!key) { $('key').focus(); return; }
+  $('key-ok').disabled = true; $('key-msg').textContent = '확인하는 중이에요…';
+  try {
+    const r = await fetch(`${API}/api/license`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
+    const d = await r.json();
+    if (d.valid) {
+      store.set('nz-pro', { key, valid: true, exp: d.expires_at || null, at: Date.now() });
+      track('pro_on'); showPro(); $('key-msg').textContent = '확인됐어요.';
+    } else { $('key-msg').textContent = '키를 확인하지 못했어요. 결제 메일의 키를 그대로 붙여 넣었는지 확인해 주세요.'; }
+  } catch (e) { $('key-msg').textContent = '연결이 안 돼요. 잠시 뒤 다시 해 주세요.'; }
+  $('key-ok').disabled = false;
+};
 
 const voted = store.get('nz-vote', null);
 for (const b of document.querySelectorAll('#votes button')) {

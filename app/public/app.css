@@ -105,6 +105,12 @@ input, select { font-size: 16px; }
 
 .pro-card { text-decoration: none; color: var(--fg); gap: 4px; border-color: var(--accent); }
 .pro-card b { font-size: 1.05rem; }
+.brand .pro-badge { margin-left: 4px; }
+.saved-total { display: flex; align-items: baseline; gap: 8px; }
+.saved-total b { font-size: 1.6rem; color: var(--accent); letter-spacing: -.02em; }
+.saved-total b.locked { color: var(--faint); filter: blur(1px); }
+.saved-detail { list-style: none; display: grid; gap: 4px; }
+.item .acts .ok { color: var(--accent); }
 .pro-badge { justify-self: start; font-size: .78rem; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: .1rem .55rem; }
 
 .share { text-align: center; display: grid; gap: 8px; justify-items: center; padding: 8px 0; }

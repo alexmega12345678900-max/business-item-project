@@ -113,6 +113,19 @@ let items = store.get('nz-items', []);
 if (!Array.isArray(items)) items = [];
 const save = () => store.set('nz-items', items);
 
+// 프리미엄: 무료는 진행 중인 기한 5개까지, 프리미엄은 무제한 + 절약 리포트
+const FREE_LIMIT = 5;
+const proInfo = () => store.get('nz-pro', null);
+const isPro = () => { const p = proInfo(); return !!(p && p.valid && (!p.exp || new Date(p.exp) > new Date())); };
+const won = (s) => +String(s || '').replace(/[^\d]/g, '') || 0;
+const fmt = (n) => `${n.toLocaleString('ko-KR')}원`;
+const doneText = (t) => (t === 'return' ? '반품했어요' : t === 'warranty' ? '수리받았어요' : '해지했어요');
+async function checkLicense(key) {
+  const r = await fetch(`${API}/api/license`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
+  const d = await r.json().catch(() => ({}));
+  return { key, valid: !!d.valid, exp: d.expires_at || null, at: Date.now() };
+}
+
 function preview() {
   const type = $('f-type').value;
   const base = $('f-base').value ? fromIso($('f-base').value) : today();
@@ -130,14 +143,16 @@ const guideText = (it) => (it.type === 'return' ? '반품 방법' : it.type === 
 function render() {
   const list = $('list');
   list.innerHTML = '';
-  const sorted = [...items].sort((a, b) => a.end.localeCompare(b.end));
+  const sorted = items.filter((x) => !x.done).sort((a, b) => a.end.localeCompare(b.end));
   $('hero').classList.toggle('compact', sorted.length > 0);
   if (!sorted.length) list.innerHTML = '<li class="empty">아직 등록된 기한이 없어요.<br>위에서 예시를 눌러 보세요.</li>';
   for (const it of sorted) {
     const d = dday(fromIso(it.end));
     const li = document.createElement('li');
     li.className = `item${d >= 0 && d <= 3 ? ' urgent' : ''}${d < 0 ? ' past' : ''}`;
-    li.innerHTML = '<span class="dday"></span><div class="info"><b></b><small></small></div><div class="acts"><button class="bell"></button><a class="btnlike guide" target="_blank" rel="noopener"></a><button class="del" aria-label="삭제">삭제</button></div>';
+    li.innerHTML = '<span class="dday"></span><div class="info"><b></b><small></small></div><div class="acts"><button class="bell"></button><a class="btnlike guide" target="_blank" rel="noopener"></a><button class="ok"></button><button class="del" aria-label="삭제">삭제</button></div>';
+    li.querySelector('.ok').textContent = `✓ ${doneText(it.type)}`;
+    li.querySelector('.ok').onclick = () => openDone(it);
     li.querySelector('.dday').textContent = label(d);
     li.querySelector('b').textContent = it.name;
     li.querySelector('small').textContent = `${TYPES[it.type].label} · ${md(fromIso(it.end))}${it.amount ? ` · ${it.amount}` : ''}`;
@@ -158,7 +173,10 @@ function render() {
   if (soon) {
     a.textContent = `🔔 "${soon.name}" ${TYPES[soon.type].label}까지 ${label(dday(fromIso(soon.end)))}. ${soon.type === 'return' ? '반품하려면 지금 신청하세요.' : soon.type === 'warranty' ? '무상 수리가 필요하면 지금 신청하세요.' : '계속 쓸 게 아니면 지금 해지하세요.'}`;
   }
-  $('pro-tip').hidden = sorted.length < 3;
+  $('pro-tip').hidden = isPro() || sorted.length < 3;
+  renderSaved();
+  $('pro-card').hidden = isPro();
+  $('pro-badge').hidden = !isPro();
   $('ios-tip').hidden = native || !(isIOS && !standalone && sorted.length > 0);
 }
 
@@ -189,6 +207,45 @@ async function scheduleNotif(it) {
 async function cancelNotif(it) {
   if (!notif) return;
   try { await notif.cancel({ notifications: [1, 2, 3].map((k) => ({ id: nid(it, k) })) }); } catch (e) {}
+}
+
+// 처리 완료: 해지·반품·수리를 끝낸 기한을 기록하고 아낀 돈을 모음
+let doneItem = null;
+function openDone(it) {
+  doneItem = it;
+  $('done-title').textContent = `${it.name} · ${doneText(it.type)}`;
+  $('done-amt').value = won(it.amount) || '';
+  $('done').showModal();
+}
+$('done-ok').onclick = (e) => {
+  e.preventDefault();
+  if (!doneItem) return;
+  doneItem.done = true; doneItem.saved = Math.max(0, +$('done-amt').value || 0); doneItem.doneAt = iso(today());
+  cancelNotif(doneItem); save(); track('done', doneItem.type); $('done').close(); render();
+};
+function renderSaved() {
+  const done = items.filter((x) => x.done);
+  $('saved').hidden = !done.length;
+  if (!done.length) return;
+  const year = String(today().getFullYear());
+  const thisYear = done.filter((x) => (x.doneAt || '').startsWith(year));
+  const total = thisYear.reduce((a, x) => a + (x.saved || 0), 0);
+  $('saved-count').textContent = `${thisYear.length}건 처리`;
+  if (!isPro()) {
+    $('saved-total').textContent = '●●,●●●원';
+    $('saved-total').classList.add('locked');
+    $('saved-detail').innerHTML = '';
+    $('saved-lock').hidden = false;
+    return;
+  }
+  $('saved-total').textContent = fmt(total);
+  $('saved-total').classList.remove('locked');
+  $('saved-lock').hidden = true;
+  const byMonth = {};
+  for (const x of thisYear) { const m = +x.doneAt.slice(5, 7); byMonth[m] = (byMonth[m] || 0) + (x.saved || 0); }
+  const ul = $('saved-detail'); ul.innerHTML = '';
+  for (const [m, v] of Object.entries(byMonth).sort((a, b) => b[0] - a[0])) { const li = document.createElement('li'); li.textContent = `${m}월 · ${fmt(v)}`; ul.append(li); }
+  for (const x of thisYear.slice(-5).reverse()) { const li = document.createElement('li'); li.className = 'muted'; li.textContent = `${x.name} ${doneText(x.type)} · ${fmt(x.saved || 0)}`; ul.append(li); }
 }
 
 let calItem = null;
@@ -244,6 +301,7 @@ $('f-type').addEventListener('change', () => {
   const d = TYPES[$('f-type').value]; $('f-n').value = d.n; $('f-unit').value = d.unit; preview();
 });
 $('add').onclick = () => {
+  if (!isPro() && items.filter((x) => !x.done).length >= FREE_LIMIT) { track('limit_hit'); $('limit').showModal(); return; }
   const end = preview();
   const type = $('f-type').value;
   const it = {
@@ -307,4 +365,6 @@ if (apk && !native && /Android/i.test(navigator.userAgent)) { apk.hidden = false
 
 track('visit', native ? platform : standalone ? 'pwa' : '');
 render();
+// 프리미엄 키는 사흘마다 다시 확인 (구독이 끝나면 무료로 돌아감)
+{ const p = proInfo(); if (p && p.key && Date.now() - (p.at || 0) > 3 * 86400000) checkLicense(p.key).then((r) => { store.set('nz-pro', r); render(); }).catch(() => {}); }
 if (!native && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
