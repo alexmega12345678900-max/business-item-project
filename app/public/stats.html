@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>놓침제로 · 반응 지표</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="/app.css">
+<style>
+.wrap { max-width: 960px; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; }
+.scroll { overflow-x: auto; }
+.pct { color: var(--faint); font-size: .8rem; margin-left: 4px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>반응 지표</h1>
+  <form class="row" id="f"><input id="key" type="password" placeholder="지표 키" autocomplete="off"><button class="primary">보기</button></form>
+  <p class="note" id="msg">숫자는 사람 수(같은 사람이 여러 번 해도 1명)예요. 괄호는 방문자 대비 비율이에요.</p>
+  <section class="card"><h2>채널별 전환</h2><div class="scroll"><table id="funnel"></table></div></section>
+  <section class="card"><h2>날짜별 사람 수</h2><div class="scroll"><table id="days"></table></div></section>
+  <section class="card"><h2>등록한 기한 종류</h2><div class="scroll"><table id="kinds"></table></div></section>
+</main>
+<script>
+const COLS = [['visit', '방문'], ['parse', '기한 찾기'], ['add', '등록'], ['cal', '알림 넣기'], ['install_prompt', '홈 화면 추가 시도'], ['share', '공유']];
+const KIND = { trial: '무료체험', sub: '구독', return: '반품', warranty: '보증' };
+const $ = (id) => document.getElementById(id);
+const cell = (tag, text) => { const c = document.createElement(tag); c.textContent = text; return c; };
+
+function table(el, head, rows) {
+  el.innerHTML = '';
+  const tr = document.createElement('tr');
+  head.forEach((h) => tr.append(cell('th', h)));
+  el.append(tr);
+  rows.forEach((r) => { const t = document.createElement('tr'); r.forEach((v) => t.append(v instanceof Node ? v : cell('td', v))); el.append(t); });
+}
+
+async function load(key) {
+  const res = await fetch(`/api/stats?key=${encodeURIComponent(key)}`);
+  if (!res.ok) { $('msg').textContent = '키가 맞지 않아요.'; return; }
+  const data = await res.json();
+  try { sessionStorage.setItem('nz-stats-key', key); } catch (e) {}
+  const by = {};
+  for (const r of data.bySrc) {
+    const ev = r.ev.startsWith('cal_') ? 'cal' : r.ev;
+    by[r.src] ??= {};
+    by[r.src][ev] = Math.max(by[r.src][ev] || 0, r.u);
+  }
+  const total = {};
+  Object.values(by).forEach((o) => Object.entries(o).forEach(([k, v]) => { total[k] = (total[k] || 0) + v; }));
+  const row = (name, o) => [name, ...COLS.map(([k], i) => {
+    const td = cell('td', String(o[k] || 0));
+    if (i > 0 && o.visit) td.append(cell('span', `(${Math.round(((o[k] || 0) / o.visit) * 100)}%)`)), td.lastChild.className = 'pct';
+    return td;
+  })];
+  table($('funnel'), ['채널', ...COLS.map((c) => c[1])], [...Object.entries(by).sort((a, b) => (b[1].visit || 0) - (a[1].visit || 0)).map(([s, o]) => row(s, o)), row('합계', total)]);
+  const days = {};
+  for (const r of data.byDay) { const ev = r.ev.startsWith('cal_') ? 'cal' : r.ev; days[r.d] ??= {}; days[r.d][ev] = (days[r.d][ev] || 0) + r.u; }
+  table($('days'), ['날짜', ...COLS.map((c) => c[1])], Object.entries(days).map(([d, o]) => [d, ...COLS.map(([k]) => String(o[k] || 0))]));
+  table($('kinds'), ['종류', '등록 수'], data.byKind.map((r) => [KIND[r.kind] || r.kind || '-', String(r.n)]));
+  $('msg').textContent = '숫자는 사람 수(같은 사람이 여러 번 해도 1명)예요. 괄호는 방문자 대비 비율이에요. 합계는 채널별 합이라 한 사람이 두 채널로 들어오면 두 번 세져요.';
+}
+
+$('f').onsubmit = (e) => { e.preventDefault(); load($('key').value); };
+const k = new URLSearchParams(location.search).get('key') || (() => { try { return sessionStorage.getItem('nz-stats-key'); } catch (e) { return null; } })();
+if (k) { $('key').value = k; history.replaceState(null, '', location.pathname); load(k); }
+</script>
+</body>
+</html>

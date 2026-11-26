@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>놓침제로 · 무료체험·구독·반품 기한 알림</title>
+<meta name="description" content="결제 문자 붙여넣기 한 번이면 무료체험·구독·반품·보증 기한을 계산해서 마감 전에 알려 드려요. 가입 없이 바로 써요.">
+<meta name="theme-color" content="#0f7a5c">
+<meta property="og:type" content="website">
+<meta property="og:title" content="놓침제로 · 돈 나가기 전에 알려 주는 기한 알림">
+<meta property="og:description" content="결제 문자 붙여넣기 한 번이면 무료체험·구독·반품·보증 마감 전에 알려 드려요.">
+<meta property="og:image" content="https://nochimzero.pages.dev/og.png">
+<meta property="og:url" content="https://nochimzero.pages.dev/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="놓침제로">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">놓침제로</a>
+  <button class="ghost" id="install" hidden>홈 화면에 추가</button>
+</header>
+
+<main class="wrap">
+  <section class="hero" id="hero">
+    <h1>돈 나가기 전에<br><em>먼저 알려 드려요</em></h1>
+    <p>결제 문자를 붙여 넣으면 무료체험·구독·반품·보증 마감일을 계산하고, 3일 전과 하루 전에 알림을 넣어 드려요.</p>
+    <ul class="points">
+      <li>가입 없음</li>
+      <li>앱 설치 없음</li>
+      <li>문자 내용은 이 폰에만 저장</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-in">
+    <h2 id="h-in"><span class="step">1</span>결제 문자 붙여넣기</h2>
+    <textarea id="text" placeholder="결제 문자, 주문 확인 메일 내용을 붙여 넣으세요"></textarea>
+    <div class="samples" id="samples"><span>예시로 해 보기</span></div>
+    <button class="primary wide" id="read">기한 찾기</button>
+
+    <div class="confirm" id="confirm" aria-live="polite">
+      <p class="found" id="found"></p>
+      <div class="fields">
+        <label for="f-name">이름</label><input id="f-name">
+        <label for="f-type">기한 종류</label>
+        <select id="f-type">
+          <option value="trial">무료체험 종료</option>
+          <option value="sub">구독 갱신</option>
+          <option value="return">반품 기한</option>
+          <option value="warranty">보증기간</option>
+        </select>
+        <label for="f-base" id="l-base">기준일</label><input id="f-base" type="date">
+        <label for="f-n">기간</label>
+        <div class="rule"><span>+</span><input id="f-n" type="number" min="1" inputmode="numeric"><select id="f-unit"><option value="d">일</option><option value="m">개월</option><option value="y">년</option></select></div>
+      </div>
+      <p class="calc" id="calc"></p>
+      <div class="row"><button class="primary" id="add">목록에 추가</button><button id="cancel">취소</button></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="h-list">
+    <h2 id="h-list"><span class="step">2</span>다가오는 기한</h2>
+    <p class="tip warn" id="alert" hidden></p>
+    <ul class="list" id="list"></ul>
+    <p class="tip" id="ios-tip" hidden>아이폰은 Safari 아래 <b>공유 버튼 → 홈 화면에 추가</b>를 하면 앱처럼 열려요. 목록도 더 오래 안전하게 남아요.</p>
+  </section>
+
+  <section class="share">
+    <p>친구도 무료체험 자주 까먹는다면</p>
+    <button id="share">놓침제로 공유하기</button>
+  </section>
+
+  <footer class="foot">
+    <p>붙여 넣은 문자는 서버로 보내지 않고 이 브라우저에만 저장돼요. 캘린더에 넣을 때만 이름과 날짜를 사용해요.</p>
+    <p>상명대학교 디지털창업서비스기획과마케팅 1조</p>
+  </footer>
+</main>
+
+<dialog id="cal">
+  <form method="dialog" class="sheet">
+    <h3 id="cal-title"></h3>
+    <p class="muted" id="cal-when"></p>
+    <a class="primary wide" id="cal-ics" href="#">아이폰·맥 캘린더에 넣기</a>
+    <a class="wide btnlike" id="cal-google" href="#" target="_blank" rel="noopener">구글 캘린더에 넣기</a>
+    <p class="note" id="cal-note">아이폰 캘린더는 3일 전·하루 전 오전 9시에 알림이 울려요. 구글 캘린더는 캘린더 기본 알림 설정을 따라요.</p>
+    <button class="wide" value="close">닫기</button>
+  </form>
+</dialog>
+
+<dialog id="ios">
+  <form method="dialog" class="sheet">
+    <h3>홈 화면에 추가하기</h3>
+    <ol class="steps">
+      <li>Safari 아래쪽 <b>공유 버튼</b>(네모에 화살표)을 눌러요.</li>
+      <li><b>홈 화면에 추가</b>를 눌러요.</li>
+      <li>홈 화면의 놓침제로 아이콘으로 열면 앱처럼 써요.</li>
+    </ol>
+    <button class="primary wide" value="close">알겠어요</button>
+  </form>
+</dialog>
+
+<script src="/app.js"></script>
+</body>
+</html>
