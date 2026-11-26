@@ -1,0 +1,10 @@
+{
+  "appId": "com.nochimzero.app",
+  "appName": "놓침제로",
+  "webDir": "public",
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#0f7a5c"
+    }
+  }
+}

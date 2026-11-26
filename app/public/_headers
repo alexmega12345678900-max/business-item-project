@@ -2,3 +2,6 @@
   Cache-Control: no-cache
 /manifest.webmanifest
   Content-Type: application/manifest+json
+/nochimzero.apk
+  Content-Type: application/vnd.android.package-archive
+  Cache-Control: no-cache

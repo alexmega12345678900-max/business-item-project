@@ -82,6 +82,13 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
 };
 
+const cap = window.Capacitor;
+const native = !!(cap && cap.isNativePlatform && cap.isNativePlatform());
+const platform = native ? cap.getPlatform() : '';
+const notif = native && cap.Plugins ? cap.Plugins.LocalNotifications : null;
+const SITE = 'https://nochimzero.pages.dev';
+const API = native ? SITE : '';
+
 const params = new URLSearchParams(location.search);
 if (params.has('test')) store.set('nz-test', params.get('test') !== '0');
 const testing = store.get('nz-test', false);
@@ -89,7 +96,7 @@ let uid = store.get('nz-uid', null);
 if (!uid) { uid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}${Math.random().toString(36).slice(2)}`; store.set('nz-uid', uid); }
 const fromParam = (params.get('from') || params.get('utm_source') || '').replace(/[^\w\-가-힣]/g, '').slice(0, 40);
 if (fromParam) store.set('nz-src', fromParam);
-const src = store.get('nz-src', 'direct');
+const src = store.get('nz-src', native ? `app_${platform}` : 'direct');
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 if ([...params.keys()].length) history.replaceState(null, '', location.pathname);
@@ -98,7 +105,7 @@ function track(ev, kind = '') {
   if (testing) return;
   const body = JSON.stringify({ ev, kind, uid, src });
   try {
-    if (!(navigator.sendBeacon && navigator.sendBeacon('/api/e', body))) fetch('/api/e', { method: 'POST', body, keepalive: true }).catch(() => {});
+    if (!(navigator.sendBeacon && navigator.sendBeacon(`${API}/api/e`, body))) fetch(`${API}/api/e`, { method: 'POST', body, keepalive: true }).catch(() => {});
   } catch (e) {}
 }
 
@@ -135,14 +142,14 @@ function render() {
     li.querySelector('b').textContent = it.name;
     li.querySelector('small').textContent = `${TYPES[it.type].label} · ${md(fromIso(it.end))}${it.amount ? ` · ${it.amount}` : ''}`;
     const bell = li.querySelector('.bell');
-    bell.textContent = it.cal ? '✓ 알림 넣음' : '🔔 알림 넣기';
+    bell.textContent = native ? (it.cal ? '✓ 알림 켜짐' : '🔔 알림 켜기') : (it.cal ? '✓ 알림 넣음' : '🔔 알림 넣기');
     bell.classList.toggle('done', !!it.cal);
-    bell.onclick = () => openCal(it);
+    bell.onclick = () => (native ? scheduleNotif(it) : openCal(it));
     const g = li.querySelector('.guide');
     g.textContent = guideText(it);
     g.href = `https://www.google.com/search?q=${encodeURIComponent(guideQuery(it))}`;
     g.onclick = () => track('guide', it.type);
-    li.querySelector('.del').onclick = () => { items = items.filter((x) => x !== it); save(); track('delete', it.type); render(); };
+    li.querySelector('.del').onclick = () => { cancelNotif(it); items = items.filter((x) => x !== it); save(); track('delete', it.type); render(); };
     list.append(li);
   }
   const soon = sorted.find((it) => { const d = dday(fromIso(it.end)); return d >= 0 && d <= 3; });
@@ -151,7 +158,36 @@ function render() {
   if (soon) {
     a.textContent = `🔔 "${soon.name}" ${TYPES[soon.type].label}까지 ${label(dday(fromIso(soon.end)))}. ${soon.type === 'return' ? '반품하려면 지금 신청하세요.' : soon.type === 'warranty' ? '무상 수리가 필요하면 지금 신청하세요.' : '계속 쓸 게 아니면 지금 해지하세요.'}`;
   }
-  $('ios-tip').hidden = !(isIOS && !standalone && sorted.length > 0);
+  $('ios-tip').hidden = native || !(isIOS && !standalone && sorted.length > 0);
+}
+
+// 앱(안드로이드·아이폰): 캘린더 대신 폰 알림을 마감 3일 전·하루 전 오전 9시에 예약
+const nid = (it, k) => { let h = 0; for (const c of it.id) h = (h * 31 + c.charCodeAt(0)) | 0; return (Math.abs(h) % 100000000) * 10 + k; };
+const notifText = (it) => (it.type === 'return' ? '반품하려면 지금 신청하세요.' : it.type === 'warranty' ? '무상 수리가 필요하면 지금 신청하세요.' : '계속 쓸 게 아니면 지금 해지하세요.');
+async function scheduleNotif(it) {
+  if (!notif) return;
+  try {
+    let p = await notif.checkPermissions();
+    if (p.display !== 'granted') p = await notif.requestPermissions();
+    if (p.display !== 'granted') { alert('알림 권한이 꺼져 있어요. 폰 설정에서 놓침제로 알림을 켜 주세요.'); return; }
+    const end = fromIso(it.end);
+    const now = Date.now();
+    const list = [];
+    for (const [before, k] of [[3, 1], [1, 2]]) {
+      const at = new Date(end); at.setDate(at.getDate() - before); at.setHours(9, 0, 0, 0);
+      if (at.getTime() > now) list.push({ id: nid(it, k), title: `${it.name} ${TYPES[it.type].label} D-${before}`, body: `${md(end)}까지예요. ${notifText(it)}`, schedule: { at, allowWhileIdle: true } });
+    }
+    if (!list.length) list.push({ id: nid(it, 3), title: `${it.name} ${TYPES[it.type].label} ${label(dday(end))}`, body: `${md(end)}까지예요. ${notifText(it)}`, schedule: { at: new Date(now + 5000), allowWhileIdle: true } });
+    await cancelNotif(it);
+    await notif.schedule({ notifications: list });
+    it.cal = true; save(); track('notif', it.type); render();
+  } catch (e) {
+    alert('알림을 예약하지 못했어요. 다시 시도해 주세요.');
+  }
+}
+async function cancelNotif(it) {
+  if (!notif) return;
+  try { await notif.cancel({ notifications: [1, 2, 3].map((k) => ({ id: nid(it, k) })) }); } catch (e) {}
 }
 
 let calItem = null;
@@ -217,7 +253,7 @@ $('add').onclick = () => {
   items.push(it);
   save(); track('add', type); render();
   $('confirm').classList.remove('show'); $('text').value = '';
-  openCal(it);
+  if (native) scheduleNotif(it); else openCal(it);
 };
 $('cancel').onclick = () => $('confirm').classList.remove('show');
 
@@ -231,7 +267,7 @@ for (const [k, v] of samples()) {
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; $('install').hidden = false; });
 window.addEventListener('appinstalled', () => { $('install').hidden = true; track('installed'); });
-if (isIOS && !standalone) $('install').hidden = false;
+if (isIOS && !standalone && !native) $('install').hidden = false;
 $('install').onclick = async () => {
   if (deferredPrompt) {
     track('install_prompt', 'android');
@@ -246,7 +282,7 @@ $('install').onclick = async () => {
 };
 
 $('share').onclick = async () => {
-  const url = `${location.origin}/?from=share`;
+  const url = `${native ? SITE : location.origin}/?from=share`;
   const text = '결제 문자 붙여넣기 한 번이면 무료체험·구독·반품 마감 전에 알려 줘요';
   track('share');
   if (navigator.share) {
@@ -256,6 +292,18 @@ $('share').onclick = async () => {
   }
 };
 
-track('visit', standalone ? 'pwa' : '');
+// 앱 안에서는 설치 안내 대신 폰 알림 문구로 바꾸기
+if (native) {
+  document.body.classList.add('native');
+  const pts = document.querySelectorAll('.points li');
+  if (pts[1]) pts[1].textContent = '폰 알림으로 미리';
+  const foot = document.querySelector('.foot p');
+  if (foot) foot.textContent = '붙여 넣은 문자는 서버로 보내지 않고 이 폰에만 저장돼요. 알림도 폰 안에서만 예약돼요.';
+}
+// 안드로이드 브라우저로 들어온 사람에게 앱 받기 버튼 보여 주기
+const apk = $('apk');
+if (apk && !native && /Android/i.test(navigator.userAgent)) { apk.hidden = false; apk.onclick = () => track('apk'); }
+
+track('visit', native ? platform : standalone ? 'pwa' : '');
 render();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+if (!native && 'serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});

@@ -39,3 +39,32 @@ npx wrangler@latest pages deploy --project-name nochimzero --branch main
 ```
 
 DB 구조는 `schema.sql`.
+
+## 폰 앱 (안드로이드·아이폰)
+
+웹 코드(`public/`)를 Capacitor 8로 감싼 앱입니다. 앱 안에서는 캘린더 대신 **폰 알림**이 마감 3일 전·하루 전 오전 9시에 울립니다. 지표에는 채널 `app_android`, `app_ios`로 잡히고, 알림 켜기는 "알림 넣기" 칸에 합쳐집니다.
+
+- 안드로이드 설치 파일: https://nochimzero.pages.dev/nochimzero.apk (안드로이드 폰으로 사이트에 들어오면 "안드로이드 앱 받기" 버튼이 보임)
+- 처음 설치할 때 "출처를 알 수 없는 앱 설치 허용"을 한 번 켜야 합니다.
+
+### 다시 빌드하기 (맥)
+
+```bash
+cd app
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
+npm run apk          # 안드로이드: public/nochimzero.apk까지 갱신
+npx cap sync ios     # 아이폰: 그다음 npx cap open ios 로 Xcode에서 실행
+```
+
+웹을 고친 뒤에는 `npm run apk` → `wrangler pages deploy` 순서로 하면 사이트와 APK가 같이 갱신됩니다.
+
+## 카드뉴스 A/B 올리는 법
+
+같은 10장에 표지만 다릅니다 (디자인 캔버스 `놓침제로 카드뉴스`의 `01 표지`와 `01 표지 B안`).
+
+| 안 | 표지 | 캡션 링크 |
+|---|---|---|
+| A안 | 초록 정보형 (D-day 목록) | https://nochimzero.pages.dev/?from=insta_a |
+| B안 | 노란 공감형 ("헉… 또 결제됐네?") | https://nochimzero.pages.dev/?from=insta_b |
+
+인스타 캡션에는 링크가 안 눌리므로 프로필 링크(또는 링크트리)에 두 주소를 따로 두거나, 스토리 링크 스티커로 각각 올립니다.
