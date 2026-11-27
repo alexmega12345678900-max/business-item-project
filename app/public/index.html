@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>놓침제로 · 무료체험·구독·반품 기한 알림</title>
 <meta name="description" content="결제 문자를 붙여 넣으면 무료체험·구독·반품·보증 기한을 마감 전에 알려 드려요.">
-<meta name="theme-color" content="#0f7a5c">
+<meta name="theme-color" content="#f4f5f2">
 <meta property="og:type" content="website">
 <meta property="og:title" content="놓침제로 · 돈 나가기 전에 알려 주는 기한 알림">
 <meta property="og:description" content="결제 문자를 붙여 넣으면 마감 전에 알려 드려요.">
@@ -22,116 +22,98 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/"><img src="/icon-192.png" alt="" width="26" height="26">놓침제로<span class="pro-badge" id="pro-badge" hidden>PRO</span></a>
-  <div class="top-acts">
-    <button class="ghost" id="install" hidden>앱으로 쓰기</button>
-    <a class="ghost btnlike" id="apk" href="/nochimzero.apk" download hidden>앱 받기</a>
-  </div>
+  <span class="brand"><img src="/icon-192.png" alt="" width="26" height="26">놓침제로<span class="pro-badge" id="pro-badge" hidden>PRO</span></span>
+  <button class="icon-btn" id="menu-btn" aria-label="메뉴">⋯</button>
 </header>
 
 <main class="wrap">
   <section class="empty" id="hero">
-    <h1>돈 나가기 전에<br>먼저 알려 드려요</h1>
-    <p>결제 문자만 붙여 넣으세요.</p>
-    <ul class="kinds"><li>무료체험</li><li>구독 갱신</li><li>반품</li><li>보증기간</li></ul>
+    <h1>결제 문자 복사하고<br>＋ 누르면 끝</h1>
+    <p>마감 3일 전, 하루 전에 알려 드려요</p>
   </section>
 
   <section id="board" hidden>
-    <div class="summary">
-      <div><span class="muted">다가오는 기한</span><b id="count"></b></div>
-      <button class="saved-row" id="saved" hidden><span class="muted">올해 아낀 돈</span><b id="saved-sum"></b></button>
-    </div>
-    <p class="alert" id="alert" hidden></p>
+    <button class="saved-line" id="saved" hidden></button>
     <ul class="list" id="list"></ul>
-    <div class="list-acts">
-      <button class="text-btn" id="family">가족에게 보내기 <span class="pro-badge">PRO</span></button>
-    </div>
   </section>
-
-  <a class="pro-card" id="pro-card" href="/premium.html?via=card">
-    <span><b>프리미엄</b> 월 1,900원</span>
-    <span class="muted">기한 무제한 · 캡처 등록 · 가족 공유</span>
-  </a>
-
-  <p class="ios-tip" id="ios-tip" hidden>Safari 공유 → 홈 화면에 추가하면 앱처럼 열려요</p>
-
-  <footer class="foot">
-    <p>문자는 이 폰에만 저장돼요</p>
-    <p><button class="text-btn" id="share">친구에게 알려 주기</button></p>
-    <p>상명대 디지털창업서비스기획과마케팅 1조</p>
-  </footer>
 </main>
 
-<div class="fab-bar"><button class="primary fab" id="open-add">＋ 기한 추가</button></div>
+<div class="fab-bar"><button class="primary fab" id="open-add">＋ 추가</button></div>
 
 <dialog id="add-sheet">
   <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3>기한 추가</h3><button class="close" value="close" aria-label="닫기">✕</button></div>
-    <textarea id="text" placeholder="결제 문자를 붙여 넣으세요"></textarea>
-    <div class="row">
-      <button type="button" class="primary" id="read">기한 찾기</button>
-      <label class="btnlike photo" for="photo">캡처 올리기 <span class="pro-badge">PRO</span></label>
-      <input id="photo" type="file" accept="image/*" hidden>
+    <div id="paste-area" class="paste-area">
+      <textarea id="text" placeholder="결제 문자 붙여넣기"></textarea>
+      <button type="button" class="primary wide" id="read">찾기</button>
+      <div class="sub-row">
+        <label class="text-btn" for="photo">캡처로 올리기 <span class="pro-badge">PRO</span></label>
+        <input id="photo" type="file" accept="image/*" hidden>
+        <span class="samples" id="samples"></span>
+      </div>
+      <p class="note" id="photo-msg" hidden></p>
     </div>
-    <p class="note" id="photo-msg" hidden></p>
-    <div class="samples" id="samples"><span>예시</span></div>
 
     <div class="confirm" id="confirm" aria-live="polite">
       <p class="found" id="found"></p>
       <p class="calc" id="calc"></p>
-      <details class="edit">
-        <summary>날짜 고치기</summary>
-        <div class="fields">
-          <label for="f-name">이름</label><input id="f-name">
-          <label for="f-type">종류</label>
-          <select id="f-type">
-            <option value="trial">무료체험 종료</option>
-            <option value="sub">구독 갱신</option>
-            <option value="return">반품 기한</option>
-            <option value="warranty">보증기간</option>
-          </select>
-          <label for="f-base" id="l-base">기준일</label><input id="f-base" type="date">
-          <label for="f-n">기간</label>
-          <div class="rule"><input id="f-n" type="number" min="1" inputmode="numeric"><select id="f-unit"><option value="d">일</option><option value="m">개월</option><option value="y">년</option></select></div>
-        </div>
-      </details>
-      <div class="row"><button type="button" class="primary" id="add">추가</button><button type="button" id="cancel">다시</button></div>
+      <button type="button" class="primary wide" id="add">추가</button>
+      <div class="sub-row">
+        <button type="button" class="text-btn" id="cancel">다시</button>
+        <details class="edit">
+          <summary>날짜 고치기</summary>
+          <div class="fields">
+            <label for="f-name">이름</label><input id="f-name">
+            <label for="f-type">종류</label>
+            <select id="f-type">
+              <option value="trial">무료체험 종료</option>
+              <option value="sub">구독 갱신</option>
+              <option value="return">반품 기한</option>
+              <option value="warranty">보증기간</option>
+            </select>
+            <label for="f-base" id="l-base">기준일</label><input id="f-base" type="date">
+            <label for="f-n">기간</label>
+            <div class="rule"><input id="f-n" type="number" min="1" inputmode="numeric"><select id="f-unit"><option value="d">일</option><option value="m">개월</option><option value="y">년</option></select></div>
+          </div>
+        </details>
+      </div>
     </div>
   </form>
 </dialog>
 
 <dialog id="item">
   <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3 id="item-name"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
-    <p class="item-meta"><span class="dday" id="item-dday"></span><span id="item-meta"></span></p>
-    <button type="button" class="primary wide" id="item-bell"></button>
-    <a class="btnlike wide" id="item-guide" target="_blank" rel="noopener"></a>
+    <p class="item-head"><span class="dday" id="item-dday"></span><span><b id="item-name"></b><small id="item-meta"></small></span></p>
+    <a class="primary wide btnlike" id="item-guide" target="_blank" rel="noopener"></a>
     <button type="button" class="wide" id="item-done"></button>
-    <button type="button" class="text-btn danger" id="item-del">삭제</button>
+    <div class="sub-row center">
+      <button type="button" class="text-btn" id="item-bell"></button>
+      <button type="button" class="text-btn danger" id="item-del">삭제</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="menu">
+  <form method="dialog" class="sheet menu">
+    <a class="menu-row" href="/premium.html?via=menu"><span>프리미엄</span><span class="muted">월 1,900원</span></a>
+    <button type="button" class="menu-row" id="family"><span>가족에게 보내기</span><span class="pro-badge">PRO</span></button>
+    <button type="button" class="menu-row" id="share"><span>친구에게 알려 주기</span></button>
+    <a class="menu-row" id="apk" href="/nochimzero.apk" download hidden><span>안드로이드 앱 받기</span></a>
+    <button type="button" class="menu-row" id="install" hidden><span>홈 화면에 추가</span></button>
+    <p class="note center">문자는 이 폰에만 저장돼요</p>
   </form>
 </dialog>
 
 <dialog id="cal">
   <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3 id="cal-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <p class="found" id="cal-title"></p>
     <p class="muted" id="cal-when"></p>
     <a class="primary wide" id="cal-ics" href="#">아이폰 캘린더</a>
     <a class="wide btnlike" id="cal-google" href="#" target="_blank" rel="noopener">구글 캘린더</a>
   </form>
 </dialog>
 
-<dialog id="done">
-  <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3 id="done-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
-    <label for="done-amt" class="muted">아낀 금액</label>
-    <input id="done-amt" type="number" min="0" inputmode="numeric" placeholder="0">
-    <button class="primary wide" id="done-ok">완료</button>
-  </form>
-</dialog>
-
 <dialog id="report">
   <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3>올해 아낀 돈</h3><button class="close" value="close" aria-label="닫기">✕</button></div>
     <p class="saved-total"><b id="saved-total"></b><span class="muted" id="saved-count"></span></p>
     <ul class="saved-detail" id="saved-detail"></ul>
     <a class="primary wide btnlike" id="saved-lock" href="/premium.html?via=report" hidden>프리미엄에서 보기</a>
@@ -140,7 +122,7 @@
 
 <dialog id="limit">
   <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3 id="limit-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <p class="found" id="limit-title"></p>
     <p class="muted" id="limit-body"></p>
     <a class="primary wide btnlike" href="/premium.html?via=limit">프리미엄 보기</a>
   </form>
@@ -148,7 +130,7 @@
 
 <dialog id="import">
   <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3 id="import-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <p class="found" id="import-title"></p>
     <ul class="saved-detail" id="import-list"></ul>
     <button class="primary wide" id="import-ok">내 목록에 추가</button>
   </form>
@@ -156,11 +138,7 @@
 
 <dialog id="ios">
   <form method="dialog" class="sheet">
-    <div class="sheet-head"><h3>앱처럼 쓰기</h3><button class="close" value="close" aria-label="닫기">✕</button></div>
-    <ol class="steps">
-      <li>Safari 아래 <b>공유</b> 버튼</li>
-      <li><b>홈 화면에 추가</b></li>
-    </ol>
+    <p class="found">Safari 공유 → 홈 화면에 추가</p>
     <button class="primary wide" value="close">확인</button>
   </form>
 </dialog>

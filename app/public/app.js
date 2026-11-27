@@ -151,7 +151,6 @@ function render() {
   const any = items.length > 0;
   $('hero').hidden = any;
   $('board').hidden = !any;
-  $('count').textContent = `${sorted.length}개`;
   for (const it of sorted) {
     const d = dday(fromIso(it.end));
     const li = document.createElement('li');
@@ -166,13 +165,9 @@ function render() {
     list.append(li);
   }
   const soon = sorted.find((it) => { const d = dday(fromIso(it.end)); return d >= 0 && d <= 3; });
-  $('alert').hidden = !soon;
-  if (soon) $('alert').textContent = `${soon.name} ${label(dday(fromIso(soon.end)))} · ${soonText(soon.type)}`;
   renderSaved();
   $('family').hidden = !sorted.length;
-  $('pro-card').hidden = isPro() || !any;
   $('pro-badge').hidden = !isPro();
-  $('ios-tip').hidden = native || !(isIOS && !standalone && any);
 }
 
 // 기한 하나를 누르면 아래에서 할 일이 올라옴
@@ -184,8 +179,7 @@ function openItem(it) {
   $('item-dday').textContent = label(d);
   $('item-dday').classList.toggle('urgent', d >= 0 && d <= 3);
   $('item-meta').textContent = `${TYPES[it.type].label} · ${md(end)}${it.amount ? ` · ${it.amount}` : ''}`;
-  $('item-bell').textContent = it.cal ? (native ? '알림 켜짐 · 다시 설정' : '캘린더에 넣음 · 다시 넣기') : (native ? '3일 전·하루 전 알림 켜기' : '캘린더에 알림 넣기');
-  $('item-bell').className = `wide${it.cal ? '' : ' primary'}`;
+  $('item-bell').textContent = it.cal ? '알림 다시 설정' : '알림 켜기';
   $('item-guide').textContent = guideText(it);
   $('item-guide').href = `https://www.google.com/search?q=${encodeURIComponent(guideQuery(it))}`;
   $('item-done').textContent = `✓ ${doneText(it.type)}`;
@@ -193,7 +187,7 @@ function openItem(it) {
 }
 $('item-bell').onclick = () => { if (!curItem) return; $('item').close(); if (native) scheduleNotif(curItem); else openCal(curItem); };
 $('item-guide').addEventListener('click', () => curItem && track('guide', curItem.type));
-$('item-done').onclick = () => { if (!curItem) return; $('item').close(); openDone(curItem); };
+$('item-done').onclick = () => { if (!curItem) return; $('item').close(); markDone(curItem); };
 $('item-del').onclick = () => {
   if (!curItem) return;
   const it = curItem; cancelNotif(it); items = items.filter((x) => x !== it); save(); track('delete', it.type);
@@ -230,19 +224,10 @@ async function cancelNotif(it) {
 }
 
 // 처리 완료: 해지·반품·수리를 끝낸 기한을 기록하고 아낀 돈을 모음
-let doneItem = null;
-function openDone(it) {
-  doneItem = it;
-  $('done-title').textContent = `${it.name} ${doneText(it.type)}`;
-  $('done-amt').value = won(it.amount) || '';
-  $('done').showModal();
+function markDone(it) {
+  it.done = true; it.saved = won(it.amount); it.doneAt = iso(today());
+  cancelNotif(it); save(); track('done', it.type); render();
 }
-$('done-ok').onclick = (e) => {
-  e.preventDefault();
-  if (!doneItem) return;
-  doneItem.done = true; doneItem.saved = Math.max(0, +$('done-amt').value || 0); doneItem.doneAt = iso(today());
-  cancelNotif(doneItem); save(); track('done', doneItem.type); $('done').close(); render();
-};
 function renderSaved() {
   const year = String(today().getFullYear());
   const thisYear = items.filter((x) => x.done && (x.doneAt || '').startsWith(year));
@@ -252,13 +237,13 @@ function renderSaved() {
   $('saved-count').textContent = `${thisYear.length}건`;
   const ul = $('saved-detail'); ul.innerHTML = '';
   if (!isPro()) {
-    $('saved-sum').textContent = '보기';
+    $('saved').innerHTML = '올해 아낀 돈 <b>보기</b>';
     $('saved-total').textContent = '●●,●●●원';
     $('saved-total').classList.add('locked');
     $('saved-lock').hidden = false;
     return;
   }
-  $('saved-sum').textContent = fmt(total);
+  $('saved').innerHTML = `올해 <b>${fmt(total)}</b> 아꼈어요`;
   $('saved-total').textContent = fmt(total);
   $('saved-total').classList.remove('locked');
   $('saved-lock').hidden = true;
@@ -309,11 +294,10 @@ $('read').onclick = () => {
   $('f-base').value = iso(p.base);
   $('f-n').value = p.n;
   $('f-unit').value = p.unit;
-  $('confirm').classList.add('show');
+  $('confirm').classList.add('show'); $('paste-area').classList.add('hide');
   preview();
   $('confirm').querySelector('.edit').open = !p.baseFound;
   track('parse', p.type);
-  $('confirm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
 ['f-name', 'f-type', 'f-base', 'f-n', 'f-unit'].forEach((id) => $(id).addEventListener('input', preview));
 $('f-type').addEventListener('change', () => {
@@ -330,11 +314,11 @@ $('add').onclick = () => {
   };
   items.push(it);
   save(); track('add', type); render();
-  $('confirm').classList.remove('show'); $('text').value = '';
+  $('confirm').classList.remove('show'); $('paste-area').classList.remove('hide'); $('text').value = '';
   $('add-sheet').close();
   if (native) scheduleNotif(it); else openCal(it);
 };
-$('cancel').onclick = () => $('confirm').classList.remove('show');
+$('cancel').onclick = () => { $('confirm').classList.remove('show'); $('paste-area').classList.remove('hide'); $('text').focus(); };
 
 // 프리미엄: 결제 화면 캡처를 올리면 글자를 읽어 붙여넣기 칸에 채우고 바로 기한 찾기
 function shrink(file) {
@@ -358,6 +342,7 @@ $('photo').addEventListener('click', (e) => {
 const b64 = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
 $('family').onclick = async () => {
+  $('menu').close();
   if (!isPro()) { track('family_lock'); lockDialog('가족 공유는 프리미엄', '같이 챙길 기한을 링크 하나로 보내요.'); return; }
   const list = items.filter((x) => !x.done).map(({ name, type, end, amount }) => [name, type, end, amount || '']);
   const url = `${SITE}/#share=${b64(JSON.stringify(list))}`;
@@ -414,13 +399,27 @@ window.nzShared = (t) => {
 nzShared([params.get('title'), params.get('text')].filter(Boolean).join(' '));
 try { if (window.NzAndroid) nzShared(window.NzAndroid.takeShared()); } catch (e) {}
 
-function openAdd() { if (!$('add-sheet').open) { $('confirm').classList.remove('show'); $('photo-msg').hidden = true; $('add-sheet').showModal(); } }
-$('open-add').onclick = () => { openAdd(); setTimeout(() => $('text').focus(), 50); };
+function openAdd() {
+  if ($('add-sheet').open) return;
+  $('confirm').classList.remove('show'); $('paste-area').classList.remove('hide'); $('photo-msg').hidden = true; $('text').value = '';
+  $('add-sheet').showModal();
+}
+// ＋를 누르면 복사해 둔 결제 문자를 바로 읽어서 기한까지 찾음 (못 읽으면 붙여넣기 칸)
+$('open-add').onclick = async () => {
+  openAdd();
+  try {
+    const t = navigator.clipboard && navigator.clipboard.readText ? (await navigator.clipboard.readText()).trim() : '';
+    if (t && /\d/.test(t) && t.length >= 10) { $('text').value = t.slice(0, 2000); track('clip'); $('read').click(); return; }
+  } catch (e) {}
+  $('text').focus();
+};
+$('menu-btn').onclick = () => $('menu').showModal();
 
-for (const [k, v] of samples()) {
+{
   const b = document.createElement('button');
-  b.type = 'button'; b.className = 'chip'; b.textContent = k;
-  b.onclick = () => { $('text').value = v; $('read').click(); };
+  b.type = 'button'; b.className = 'text-btn'; b.textContent = '예시로 해 보기';
+  let i = 0;
+  b.onclick = () => { const list = samples(); $('text').value = list[i++ % list.length][1]; $('read').click(); };
   $('samples').append(b);
 }
 
