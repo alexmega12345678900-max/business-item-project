@@ -133,53 +133,72 @@ function preview() {
   const unit = $('f-unit').value;
   const end = addRule(base, n, unit);
   $('l-base').textContent = TYPES[type].base;
-  $('calc').innerHTML = `${TYPES[type].base} ${md(base)} + ${n}${UNIT[unit]} = <b>${TYPES[type].label} ${md(end)}</b> (${label(dday(end))})`;
+  $('calc').innerHTML = `${TYPES[type].base} ${md(base)} + ${n}${UNIT[unit]} → <b>${md(end)} · ${label(dday(end))}</b>`;
+  $('found').textContent = `${$('f-name').value.trim() || TYPES[type].label} · ${TYPES[type].label}`;
   return end;
 }
 
 const guideQuery = (it) => (it.type === 'return' ? `${it.name} 반품 신청 방법` : it.type === 'warranty' ? `${it.name} 무상 수리 AS 신청` : `${it.name} 해지 방법`);
 const guideText = (it) => (it.type === 'return' ? '반품 방법' : it.type === 'warranty' ? 'AS 방법' : '해지 방법');
 
+const BELL = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
+const soonText = (t) => (t === 'return' ? '반품하려면 지금' : t === 'warranty' ? '수리 맡기려면 지금' : '안 쓸 거면 지금 해지');
+
 function render() {
   const list = $('list');
   list.innerHTML = '';
   const sorted = items.filter((x) => !x.done).sort((a, b) => a.end.localeCompare(b.end));
-  $('hero').classList.toggle('compact', sorted.length > 0);
-  if (!sorted.length) list.innerHTML = '<li class="empty">아직 등록된 기한이 없어요.<br>위에서 예시를 눌러 보세요.</li>';
+  const any = items.length > 0;
+  $('hero').hidden = any;
+  $('board').hidden = !any;
+  $('count').textContent = `${sorted.length}개`;
   for (const it of sorted) {
     const d = dday(fromIso(it.end));
     const li = document.createElement('li');
-    li.className = `item${d >= 0 && d <= 3 ? ' urgent' : ''}${d < 0 ? ' past' : ''}`;
-    li.innerHTML = '<span class="dday"></span><div class="info"><b></b><small></small></div><div class="acts"><button class="bell"></button><a class="btnlike guide" target="_blank" rel="noopener"></a><button class="ok"></button><button class="del" aria-label="삭제">삭제</button></div>';
-    li.querySelector('.ok').textContent = `✓ ${doneText(it.type)}`;
-    li.querySelector('.ok').onclick = () => openDone(it);
+    li.className = `${d >= 0 && d <= 3 ? 'urgent' : ''}${d < 0 ? ' past' : ''}`;
+    li.innerHTML = '<button class="item-btn"><span class="dday"></span><span class="info"><b></b><small></small></span><span class="state"></span></button>';
     li.querySelector('.dday').textContent = label(d);
     li.querySelector('b').textContent = it.name;
-    li.querySelector('small').textContent = `${TYPES[it.type].label} · ${md(fromIso(it.end))}${it.amount ? ` · ${it.amount}` : ''}`;
-    const bell = li.querySelector('.bell');
-    bell.textContent = native ? (it.cal ? '✓ 알림 켜짐' : '🔔 알림 켜기') : (it.cal ? '✓ 알림 넣음' : '🔔 알림 넣기');
-    bell.classList.toggle('done', !!it.cal);
-    bell.onclick = () => (native ? scheduleNotif(it) : openCal(it));
-    const g = li.querySelector('.guide');
-    g.textContent = guideText(it);
-    g.href = `https://www.google.com/search?q=${encodeURIComponent(guideQuery(it))}`;
-    g.onclick = () => track('guide', it.type);
-    li.querySelector('.del').onclick = () => { cancelNotif(it); items = items.filter((x) => x !== it); save(); track('delete', it.type); render(); };
+    li.querySelector('small').textContent = `${TYPES[it.type].label} · ${md(fromIso(it.end))}`;
+    const st = li.querySelector('.state');
+    if (it.cal) { st.innerHTML = BELL; st.classList.add('on'); st.title = '알림 켜짐'; }
+    li.querySelector('button').onclick = () => openItem(it);
     list.append(li);
   }
   const soon = sorted.find((it) => { const d = dday(fromIso(it.end)); return d >= 0 && d <= 3; });
-  const a = $('alert');
-  a.hidden = !soon;
-  if (soon) {
-    a.textContent = `🔔 "${soon.name}" ${TYPES[soon.type].label}까지 ${label(dday(fromIso(soon.end)))}. ${soon.type === 'return' ? '반품하려면 지금 신청하세요.' : soon.type === 'warranty' ? '무상 수리가 필요하면 지금 신청하세요.' : '계속 쓸 게 아니면 지금 해지하세요.'}`;
-  }
-  $('pro-tip').hidden = isPro() || sorted.length < 3;
+  $('alert').hidden = !soon;
+  if (soon) $('alert').textContent = `${soon.name} ${label(dday(fromIso(soon.end)))} · ${soonText(soon.type)}`;
   renderSaved();
   $('family').hidden = !sorted.length;
-  $('pro-card').hidden = isPro();
+  $('pro-card').hidden = isPro() || !any;
   $('pro-badge').hidden = !isPro();
-  $('ios-tip').hidden = native || !(isIOS && !standalone && sorted.length > 0);
+  $('ios-tip').hidden = native || !(isIOS && !standalone && any);
 }
+
+// 기한 하나를 누르면 아래에서 할 일이 올라옴
+let curItem = null;
+function openItem(it) {
+  curItem = it;
+  const end = fromIso(it.end), d = dday(end);
+  $('item-name').textContent = it.name;
+  $('item-dday').textContent = label(d);
+  $('item-dday').classList.toggle('urgent', d >= 0 && d <= 3);
+  $('item-meta').textContent = `${TYPES[it.type].label} · ${md(end)}${it.amount ? ` · ${it.amount}` : ''}`;
+  $('item-bell').textContent = it.cal ? (native ? '알림 켜짐 · 다시 설정' : '캘린더에 넣음 · 다시 넣기') : (native ? '3일 전·하루 전 알림 켜기' : '캘린더에 알림 넣기');
+  $('item-bell').className = `wide${it.cal ? '' : ' primary'}`;
+  $('item-guide').textContent = guideText(it);
+  $('item-guide').href = `https://www.google.com/search?q=${encodeURIComponent(guideQuery(it))}`;
+  $('item-done').textContent = `✓ ${doneText(it.type)}`;
+  $('item').showModal();
+}
+$('item-bell').onclick = () => { if (!curItem) return; $('item').close(); if (native) scheduleNotif(curItem); else openCal(curItem); };
+$('item-guide').addEventListener('click', () => curItem && track('guide', curItem.type));
+$('item-done').onclick = () => { if (!curItem) return; $('item').close(); openDone(curItem); };
+$('item-del').onclick = () => {
+  if (!curItem) return;
+  const it = curItem; cancelNotif(it); items = items.filter((x) => x !== it); save(); track('delete', it.type);
+  $('item').close(); render();
+};
 
 // 앱(안드로이드·아이폰): 캘린더 대신 폰 알림을 마감 3일 전·하루 전 오전 9시에 예약
 const nid = (it, k) => { let h = 0; for (const c of it.id) h = (h * 31 + c.charCodeAt(0)) | 0; return (Math.abs(h) % 100000000) * 10 + k; };
@@ -214,7 +233,7 @@ async function cancelNotif(it) {
 let doneItem = null;
 function openDone(it) {
   doneItem = it;
-  $('done-title').textContent = `${it.name} · ${doneText(it.type)}`;
+  $('done-title').textContent = `${it.name} ${doneText(it.type)}`;
   $('done-amt').value = won(it.amount) || '';
   $('done').showModal();
 }
@@ -225,29 +244,30 @@ $('done-ok').onclick = (e) => {
   cancelNotif(doneItem); save(); track('done', doneItem.type); $('done').close(); render();
 };
 function renderSaved() {
-  const done = items.filter((x) => x.done);
-  $('saved').hidden = !done.length;
-  if (!done.length) return;
   const year = String(today().getFullYear());
-  const thisYear = done.filter((x) => (x.doneAt || '').startsWith(year));
+  const thisYear = items.filter((x) => x.done && (x.doneAt || '').startsWith(year));
+  $('saved').hidden = !thisYear.length;
+  if (!thisYear.length) return;
   const total = thisYear.reduce((a, x) => a + (x.saved || 0), 0);
-  $('saved-count').textContent = `${thisYear.length}건 처리`;
+  $('saved-count').textContent = `${thisYear.length}건`;
+  const ul = $('saved-detail'); ul.innerHTML = '';
   if (!isPro()) {
+    $('saved-sum').textContent = '보기';
     $('saved-total').textContent = '●●,●●●원';
     $('saved-total').classList.add('locked');
-    $('saved-detail').innerHTML = '';
     $('saved-lock').hidden = false;
     return;
   }
+  $('saved-sum').textContent = fmt(total);
   $('saved-total').textContent = fmt(total);
   $('saved-total').classList.remove('locked');
   $('saved-lock').hidden = true;
   const byMonth = {};
   for (const x of thisYear) { const m = +x.doneAt.slice(5, 7); byMonth[m] = (byMonth[m] || 0) + (x.saved || 0); }
-  const ul = $('saved-detail'); ul.innerHTML = '';
-  for (const [m, v] of Object.entries(byMonth).sort((a, b) => b[0] - a[0])) { const li = document.createElement('li'); li.textContent = `${m}월 · ${fmt(v)}`; ul.append(li); }
-  for (const x of thisYear.slice(-5).reverse()) { const li = document.createElement('li'); li.className = 'muted'; li.textContent = `${x.name} ${doneText(x.type)} · ${fmt(x.saved || 0)}`; ul.append(li); }
+  for (const [m, v] of Object.entries(byMonth).sort((a, b) => b[0] - a[0])) { const li = document.createElement('li'); li.textContent = `${m}월  ${fmt(v)}`; ul.append(li); }
+  for (const x of thisYear.slice(-5).reverse()) { const li = document.createElement('li'); li.className = 'muted'; li.textContent = `${x.name} · ${fmt(x.saved || 0)}`; ul.append(li); }
 }
+$('saved').onclick = () => $('report').showModal();
 
 let calItem = null;
 function openCal(it) {
@@ -256,7 +276,7 @@ function openCal(it) {
   const next = new Date(end); next.setDate(next.getDate() + 1);
   const compact = (d) => iso(d).replaceAll('-', '');
   $('cal-title').textContent = `${it.name} · ${TYPES[it.type].label}`;
-  $('cal-when').textContent = `${md(end)} (${label(dday(end))}) · 3일 전·하루 전 알림`;
+  $('cal-when').textContent = `${md(end)} · 3일 전·하루 전에 알려요`;
   $('cal-ics').href = `/ics?${new URLSearchParams({ n: it.name, t: it.type, d: it.end })}`;
   $('cal-google').href = `https://calendar.google.com/calendar/render?${new URLSearchParams({
     action: 'TEMPLATE',
@@ -277,8 +297,8 @@ const markCal = (ev) => {
 };
 $('cal-ics').addEventListener('click', () => markCal('cal_ics'));
 $('cal-google').addEventListener('click', () => markCal('cal_google'));
-$('cal').addEventListener('click', (e) => { if (e.target === $('cal')) $('cal').close(); });
-$('ios').addEventListener('click', (e) => { if (e.target === $('ios')) $('ios').close(); });
+// 시트 바깥(어두운 부분)을 누르면 닫기
+document.querySelectorAll('dialog').forEach((d) => d.addEventListener('click', (e) => { if (e.target === d) d.close(); }));
 
 $('read').onclick = () => {
   const text = $('text').value.trim();
@@ -289,20 +309,18 @@ $('read').onclick = () => {
   $('f-base').value = iso(p.base);
   $('f-n').value = p.n;
   $('f-unit').value = p.unit;
-  $('found').textContent = `✨ 기한을 찾았어요 · ${TYPES[p.type].label}` +
-    (p.baseFound ? '' : ' (날짜를 못 찾아 오늘로 넣었어요)') +
-    (p.ruleFound ? '' : ` (기간은 기본값 ${p.n}${UNIT[p.unit]})`);
   $('confirm').classList.add('show');
   preview();
+  $('confirm').querySelector('.edit').open = !p.baseFound;
   track('parse', p.type);
   $('confirm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
-['f-type', 'f-base', 'f-n', 'f-unit'].forEach((id) => $(id).addEventListener('input', preview));
+['f-name', 'f-type', 'f-base', 'f-n', 'f-unit'].forEach((id) => $(id).addEventListener('input', preview));
 $('f-type').addEventListener('change', () => {
   const d = TYPES[$('f-type').value]; $('f-n').value = d.n; $('f-unit').value = d.unit; preview();
 });
 $('add').onclick = () => {
-  if (!isPro() && items.filter((x) => !x.done).length >= FREE_LIMIT) { track('limit_hit'); $('limit-title').textContent = '무료로는 기한 5개까지 챙길 수 있어요'; $('limit').showModal(); return; }
+  if (!isPro() && items.filter((x) => !x.done).length >= FREE_LIMIT) { track('limit_hit'); lockDialog('무료는 5개까지예요', '끝난 기한을 완료로 옮기거나 프리미엄을 써 보세요.'); return; }
   const end = preview();
   const type = $('f-type').value;
   const it = {
@@ -313,6 +331,7 @@ $('add').onclick = () => {
   items.push(it);
   save(); track('add', type); render();
   $('confirm').classList.remove('show'); $('text').value = '';
+  $('add-sheet').close();
   if (native) scheduleNotif(it); else openCal(it);
 };
 $('cancel').onclick = () => $('confirm').classList.remove('show');
@@ -330,22 +349,22 @@ function shrink(file) {
     img.onerror = no; img.src = URL.createObjectURL(file);
   });
 }
-const lockDialog = (title, body) => { $('limit-title').textContent = title; $('limit-body').textContent = body; $('limit').showModal(); };
+function lockDialog(title, body) { $('limit-title').textContent = title; $('limit-body').textContent = body; $('limit').showModal(); }
 $('photo').addEventListener('click', (e) => {
-  if (!isPro()) { e.preventDefault(); track('ocr_lock'); lockDialog('캡처로 등록은 프리미엄 기능이에요', '문자를 복사하기 어려운 앱 결제 화면도 캡처만 올리면 기한을 찾아 줘요. 프리미엄은 월 1,900원이에요.'); }
+  if (!isPro()) { e.preventDefault(); track('ocr_lock'); lockDialog('캡처 올리기는 프리미엄', '앱 결제 화면을 캡처만 올리면 기한을 찾아요.'); }
 });
 
 // 프리미엄: 진행 중인 기한을 링크 하나로 가족에게 보내기 (서버에 저장하지 않고 링크 안에만 담김)
 const b64 = (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
 $('family').onclick = async () => {
-  if (!isPro()) { track('family_lock'); lockDialog('가족과 함께 관리는 프리미엄 기능이에요', '부모님 휴대폰 약정, 가족 OTT 구독처럼 같이 챙길 기한을 링크 하나로 보내요. 프리미엄은 월 1,900원이에요.'); return; }
+  if (!isPro()) { track('family_lock'); lockDialog('가족 공유는 프리미엄', '같이 챙길 기한을 링크 하나로 보내요.'); return; }
   const list = items.filter((x) => !x.done).map(({ name, type, end, amount }) => [name, type, end, amount || '']);
   const url = `${SITE}/#share=${b64(JSON.stringify(list))}`;
-  const text = `놓침제로에서 챙기는 기한 ${list.length}개를 보내요. 열면 내 목록에 넣을 수 있어요.`;
+  const text = `놓침제로 기한 ${list.length}개`;
   track('family_out', String(list.length));
   if (navigator.share) { try { await navigator.share({ title: '놓침제로 기한 목록', text, url }); } catch (e) {} }
-  else { try { await navigator.clipboard.writeText(`${text} ${url}`); $('family').textContent = '링크를 복사했어요'; } catch (e) {} }
+  else { try { await navigator.clipboard.writeText(`${text} ${url}`); $('family').textContent = '링크 복사됨'; } catch (e) {} }
 };
 let incoming = [];
 function readShare() {
@@ -357,7 +376,7 @@ function readShare() {
     history.replaceState(null, '', location.pathname);
   } catch (e) { incoming = []; }
   if (!incoming.length) return;
-  $('import-title').textContent = `가족이 보낸 기한 ${incoming.length}개`;
+  $('import-title').textContent = `받은 기한 ${incoming.length}개`;
   $('import-list').innerHTML = '';
   for (const x of incoming) { const li = document.createElement('li'); li.textContent = `${x.name} · ${TYPES[x.type].label} ${md(fromIso(x.end))}`; $('import-list').append(li); }
   setTimeout(() => $('import').showModal(), 300);
@@ -376,28 +395,31 @@ $('import-ok').onclick = (e) => {
 $('photo').addEventListener('change', async () => {
   const f = $('photo').files[0]; $('photo').value = '';
   if (!f) return;
-  const msg = $('photo-msg'); msg.hidden = false; msg.textContent = '캡처에서 글자를 읽는 중이에요… (사진은 저장하지 않아요)';
+  const msg = $('photo-msg'); msg.hidden = false; msg.textContent = '읽는 중…';
   try {
     const image = await shrink(f);
     const r = await fetch(`${API}/api/ocr`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image, key: (proInfo() || {}).key }) });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok || !d.text) { msg.textContent = r.status === 402 ? '프리미엄 확인이 안 돼요. 프리미엄 페이지에서 키를 다시 넣어 주세요.' : '글자를 못 읽었어요. 문자를 복사해서 붙여 넣어 주세요.'; return; }
+    if (!r.ok || !d.text) { msg.textContent = r.status === 402 ? '프리미엄 키를 다시 확인해 주세요.' : '못 읽었어요. 문자를 붙여 넣어 주세요.'; return; }
     msg.hidden = true; $('text').value = d.text; track('ocr'); $('read').click();
-  } catch (e) { msg.textContent = '사진을 열지 못했어요. 다른 캡처로 해 보세요.'; }
+  } catch (e) { msg.textContent = '사진을 열 수 없어요.'; }
 });
 
 // 다른 앱에서 공유로 보낸 글: 웹(홈 화면 앱)은 주소의 text, 안드로이드 앱은 NzAndroid로 받음
 window.nzShared = (t) => {
   if (!t) return;
-  $('text').value = String(t).slice(0, 2000); track('share_in', native ? platform : 'web');
+  openAdd(); $('text').value = String(t).slice(0, 2000); track('share_in', native ? platform : 'web');
   setTimeout(() => $('read').click(), 200);
 };
 nzShared([params.get('title'), params.get('text')].filter(Boolean).join(' '));
 try { if (window.NzAndroid) nzShared(window.NzAndroid.takeShared()); } catch (e) {}
 
+function openAdd() { if (!$('add-sheet').open) { $('confirm').classList.remove('show'); $('photo-msg').hidden = true; $('add-sheet').showModal(); } }
+$('open-add').onclick = () => { openAdd(); setTimeout(() => $('text').focus(), 50); };
+
 for (const [k, v] of samples()) {
   const b = document.createElement('button');
-  b.className = 'chip'; b.textContent = k;
+  b.type = 'button'; b.className = 'chip'; b.textContent = k;
   b.onclick = () => { $('text').value = v; $('read').click(); };
   $('samples').append(b);
 }
@@ -421,22 +443,18 @@ $('install').onclick = async () => {
 
 $('share').onclick = async () => {
   const url = `${native ? SITE : location.origin}/?from=share`;
-  const text = '결제 문자 붙여넣기 한 번이면 무료체험·구독·반품 마감 전에 알려 줘요';
+  const text = '무료체험·구독 마감 전에 알려 주는 앱';
   track('share');
   if (navigator.share) {
     try { await navigator.share({ title: '놓침제로', text, url }); } catch (e) {}
   } else {
-    try { await navigator.clipboard.writeText(`${text} ${url}`); $('share').textContent = '링크를 복사했어요'; } catch (e) {}
+    try { await navigator.clipboard.writeText(`${text} ${url}`); $('share').textContent = '링크 복사됨'; } catch (e) {}
   }
 };
 
 // 앱 안에서는 설치 안내 대신 폰 알림 문구로 바꾸기
 if (native) {
   document.body.classList.add('native');
-  const pts = document.querySelectorAll('.points li');
-  if (pts[1]) pts[1].textContent = '폰 알림으로 미리';
-  const foot = document.querySelector('.foot p');
-  if (foot) foot.textContent = '붙여 넣은 문자는 서버로 보내지 않고 이 폰에만 저장돼요. 알림도 폰 안에서만 예약돼요.';
 }
 // 안드로이드 브라우저로 들어온 사람에게 앱 받기 버튼 보여 주기
 const apk = $('apk');

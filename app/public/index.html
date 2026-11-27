@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>놓침제로 · 무료체험·구독·반품 기한 알림</title>
-<meta name="description" content="결제 문자 붙여넣기 한 번이면 무료체험·구독·반품·보증 기한을 계산해서 마감 전에 알려 드려요. 가입 없이 바로 써요.">
+<meta name="description" content="결제 문자를 붙여 넣으면 무료체험·구독·반품·보증 기한을 마감 전에 알려 드려요.">
 <meta name="theme-color" content="#0f7a5c">
 <meta property="og:type" content="website">
 <meta property="og:title" content="놓침제로 · 돈 나가기 전에 알려 주는 기한 알림">
-<meta property="og:description" content="결제 문자 붙여넣기 한 번이면 무료체험·구독·반품·보증 마감 전에 알려 드려요.">
+<meta property="og:description" content="결제 문자를 붙여 넣으면 마감 전에 알려 드려요.">
 <meta property="og:image" content="https://nochimzero.pages.dev/og.png">
 <meta property="og:url" content="https://nochimzero.pages.dev/">
 <meta name="twitter:card" content="summary_large_image">
@@ -22,135 +22,146 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">놓침제로<span class="pro-badge" id="pro-badge" hidden>프리미엄</span></a>
-  <button class="ghost" id="install" hidden>홈 화면에 추가</button>
+  <a class="brand" href="/"><img src="/icon-192.png" alt="" width="26" height="26">놓침제로<span class="pro-badge" id="pro-badge" hidden>PRO</span></a>
+  <div class="top-acts">
+    <button class="ghost" id="install" hidden>앱으로 쓰기</button>
+    <a class="ghost btnlike" id="apk" href="/nochimzero.apk" download hidden>앱 받기</a>
+  </div>
 </header>
 
 <main class="wrap">
-  <section class="hero" id="hero">
-    <h1>돈 나가기 전에 <br><em>먼저 알려 드려요</em></h1>
-    <p>결제 문자를 붙여 넣으면 무료체험·구독·반품·보증 마감일을 계산하고, 3일 전과 하루 전에 알림을 넣어 드려요.</p>
-    <ul class="points">
-      <li>가입 없음</li>
-      <li>앱 설치 없음</li>
-      <li>문자 내용은 이 폰에만 저장</li>
-    </ul>
-    <a class="btnlike wide" id="apk" href="/nochimzero.apk" download hidden>안드로이드 앱 받기 (폰 알림)</a>
+  <section class="empty" id="hero">
+    <h1>돈 나가기 전에<br>먼저 알려 드려요</h1>
+    <p>결제 문자만 붙여 넣으세요.</p>
+    <ul class="kinds"><li>무료체험</li><li>구독 갱신</li><li>반품</li><li>보증기간</li></ul>
   </section>
 
-  <section class="card" aria-labelledby="h-in">
-    <h2 id="h-in"><span class="step">1</span>결제 문자 붙여넣기</h2>
-    <textarea id="text" placeholder="결제 문자, 주문 확인 메일 내용을 붙여 넣으세요"></textarea>
-    <div class="samples" id="samples"><span>예시로 해 보기</span></div>
-    <div class="row">
-      <button class="primary" id="read">기한 찾기</button>
-      <label class="btnlike photo" for="photo">캡처로 등록 <span class="pro-badge">프리미엄</span></label>
-      <input id="photo" type="file" accept="image/*" hidden>
+  <section id="board" hidden>
+    <div class="summary">
+      <div><span class="muted">다가오는 기한</span><b id="count"></b></div>
+      <button class="saved-row" id="saved" hidden><span class="muted">올해 아낀 돈</span><b id="saved-sum"></b></button>
     </div>
-    <p class="note" id="photo-msg" hidden></p>
-
-    <div class="confirm" id="confirm" aria-live="polite">
-      <p class="found" id="found"></p>
-      <div class="fields">
-        <label for="f-name">이름</label><input id="f-name">
-        <label for="f-type">기한 종류</label>
-        <select id="f-type">
-          <option value="trial">무료체험 종료</option>
-          <option value="sub">구독 갱신</option>
-          <option value="return">반품 기한</option>
-          <option value="warranty">보증기간</option>
-        </select>
-        <label for="f-base" id="l-base">기준일</label><input id="f-base" type="date">
-        <label for="f-n">기간</label>
-        <div class="rule"><span>+</span><input id="f-n" type="number" min="1" inputmode="numeric"><select id="f-unit"><option value="d">일</option><option value="m">개월</option><option value="y">년</option></select></div>
-      </div>
-      <p class="calc" id="calc"></p>
-      <div class="row"><button class="primary" id="add">목록에 추가</button><button id="cancel">취소</button></div>
-    </div>
-  </section>
-
-  <section class="card" aria-labelledby="h-list">
-    <h2 id="h-list"><span class="step">2</span>다가오는 기한</h2>
-    <p class="tip warn" id="alert" hidden></p>
+    <p class="alert" id="alert" hidden></p>
     <ul class="list" id="list"></ul>
-    <button class="wide" id="family" hidden>가족에게 이 목록 보내기 <span class="pro-badge">프리미엄</span></button>
-    <p class="tip" id="pro-tip" hidden>기한이 많아졌네요. 프리미엄은 캡처 사진으로 한 번에 등록하고, 1년 동안 아낀 돈도 보여 줘요. <a href="/premium.html?via=list">미리 보기</a></p>
-    <p class="tip" id="ios-tip" hidden>아이폰은 Safari 아래 <b>공유 버튼 → 홈 화면에 추가</b>를 하면 앱처럼 열려요. 목록도 더 오래 안전하게 남아요.</p>
+    <div class="list-acts">
+      <button class="text-btn" id="family">가족에게 보내기 <span class="pro-badge">PRO</span></button>
+    </div>
   </section>
 
-  <section class="card" id="saved" aria-labelledby="h-saved" hidden>
-    <h2 id="h-saved"><span class="step">3</span>올해 아낀 돈</h2>
-    <p class="saved-total"><b id="saved-total"></b> <span class="muted" id="saved-count"></span></p>
-    <p class="tip" id="saved-lock" hidden>얼마를 아꼈는지, 달마다 얼마였는지는 프리미엄에서 보여 드려요. <a href="/premium.html?via=report">프리미엄 보기</a></p>
-    <ul class="saved-detail" id="saved-detail"></ul>
-  </section>
-
-  <a class="card pro-card" id="pro-card" href="/premium.html?via=card">
-    <span class="pro-badge">프리미엄</span>
-    <b>월 1,900원으로 더 편하게</b>
-    <span class="muted">기한 무제한 · 캡처로 등록 · 가족에게 보내기 · 아낀 돈 리포트</span>
+  <a class="pro-card" id="pro-card" href="/premium.html?via=card">
+    <span><b>프리미엄</b> 월 1,900원</span>
+    <span class="muted">기한 무제한 · 캡처 등록 · 가족 공유</span>
   </a>
 
-  <section class="share">
-    <p>친구도 무료체험 자주 까먹는다면</p>
-    <button id="share">놓침제로 공유하기</button>
-  </section>
+  <p class="ios-tip" id="ios-tip" hidden>Safari 공유 → 홈 화면에 추가하면 앱처럼 열려요</p>
 
   <footer class="foot">
-    <p>붙여 넣은 문자는 서버로 보내지 않고 이 브라우저에만 저장돼요. 캘린더에 넣을 때만 이름과 날짜를, 캡처로 등록할 때만 사진을 사용하고 저장하지 않아요.</p>
-    <p>상명대학교 디지털창업서비스기획과마케팅 1조</p>
+    <p>문자는 이 폰에만 저장돼요</p>
+    <p><button class="text-btn" id="share">친구에게 알려 주기</button></p>
+    <p>상명대 디지털창업서비스기획과마케팅 1조</p>
   </footer>
 </main>
 
+<div class="fab-bar"><button class="primary fab" id="open-add">＋ 기한 추가</button></div>
+
+<dialog id="add-sheet">
+  <form method="dialog" class="sheet">
+    <div class="sheet-head"><h3>기한 추가</h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <textarea id="text" placeholder="결제 문자를 붙여 넣으세요"></textarea>
+    <div class="row">
+      <button type="button" class="primary" id="read">기한 찾기</button>
+      <label class="btnlike photo" for="photo">캡처 올리기 <span class="pro-badge">PRO</span></label>
+      <input id="photo" type="file" accept="image/*" hidden>
+    </div>
+    <p class="note" id="photo-msg" hidden></p>
+    <div class="samples" id="samples"><span>예시</span></div>
+
+    <div class="confirm" id="confirm" aria-live="polite">
+      <p class="found" id="found"></p>
+      <p class="calc" id="calc"></p>
+      <details class="edit">
+        <summary>날짜 고치기</summary>
+        <div class="fields">
+          <label for="f-name">이름</label><input id="f-name">
+          <label for="f-type">종류</label>
+          <select id="f-type">
+            <option value="trial">무료체험 종료</option>
+            <option value="sub">구독 갱신</option>
+            <option value="return">반품 기한</option>
+            <option value="warranty">보증기간</option>
+          </select>
+          <label for="f-base" id="l-base">기준일</label><input id="f-base" type="date">
+          <label for="f-n">기간</label>
+          <div class="rule"><input id="f-n" type="number" min="1" inputmode="numeric"><select id="f-unit"><option value="d">일</option><option value="m">개월</option><option value="y">년</option></select></div>
+        </div>
+      </details>
+      <div class="row"><button type="button" class="primary" id="add">추가</button><button type="button" id="cancel">다시</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="item">
+  <form method="dialog" class="sheet">
+    <div class="sheet-head"><h3 id="item-name"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <p class="item-meta"><span class="dday" id="item-dday"></span><span id="item-meta"></span></p>
+    <button type="button" class="primary wide" id="item-bell"></button>
+    <a class="btnlike wide" id="item-guide" target="_blank" rel="noopener"></a>
+    <button type="button" class="wide" id="item-done"></button>
+    <button type="button" class="text-btn danger" id="item-del">삭제</button>
+  </form>
+</dialog>
+
 <dialog id="cal">
   <form method="dialog" class="sheet">
-    <h3 id="cal-title"></h3>
+    <div class="sheet-head"><h3 id="cal-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
     <p class="muted" id="cal-when"></p>
-    <a class="primary wide" id="cal-ics" href="#">아이폰·맥 캘린더에 넣기</a>
-    <a class="wide btnlike" id="cal-google" href="#" target="_blank" rel="noopener">구글 캘린더에 넣기</a>
-    <p class="note" id="cal-note">아이폰 캘린더는 3일 전·하루 전 오전 9시에 알림이 울려요. 구글 캘린더는 캘린더 기본 알림 설정을 따라요.</p>
-    <button class="wide" value="close">닫기</button>
+    <a class="primary wide" id="cal-ics" href="#">아이폰 캘린더</a>
+    <a class="wide btnlike" id="cal-google" href="#" target="_blank" rel="noopener">구글 캘린더</a>
   </form>
 </dialog>
 
 <dialog id="done">
   <form method="dialog" class="sheet">
-    <h3 id="done-title"></h3>
-    <p class="muted">이걸로 아낀 돈을 적어 주세요. 결제될 뻔한 금액이나 환불받은 금액이면 돼요.</p>
-    <label for="done-amt">아낀 돈 (원)</label>
-    <input id="done-amt" type="number" min="0" inputmode="numeric" placeholder="예) 13500">
-    <button class="primary wide" id="done-ok">처리 완료로 옮기기</button>
-    <button class="wide" value="close">취소</button>
+    <div class="sheet-head"><h3 id="done-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <label for="done-amt" class="muted">아낀 금액</label>
+    <input id="done-amt" type="number" min="0" inputmode="numeric" placeholder="0">
+    <button class="primary wide" id="done-ok">완료</button>
+  </form>
+</dialog>
+
+<dialog id="report">
+  <form method="dialog" class="sheet">
+    <div class="sheet-head"><h3>올해 아낀 돈</h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <p class="saved-total"><b id="saved-total"></b><span class="muted" id="saved-count"></span></p>
+    <ul class="saved-detail" id="saved-detail"></ul>
+    <a class="primary wide btnlike" id="saved-lock" href="/premium.html?via=report" hidden>프리미엄에서 보기</a>
   </form>
 </dialog>
 
 <dialog id="limit">
   <form method="dialog" class="sheet">
-    <h3 id="limit-title">무료로는 기한 5개까지 챙길 수 있어요</h3>
-    <p class="muted" id="limit-body">처리한 기한은 <b>✓ 해지했어요</b>를 눌러 옮기면 자리가 생겨요. 더 많이 챙기려면 프리미엄(월 1,900원)을 써 보세요.</p>
+    <div class="sheet-head"><h3 id="limit-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
+    <p class="muted" id="limit-body"></p>
     <a class="primary wide btnlike" href="/premium.html?via=limit">프리미엄 보기</a>
-    <button class="wide" value="close">닫기</button>
   </form>
 </dialog>
 
 <dialog id="import">
   <form method="dialog" class="sheet">
-    <h3 id="import-title"></h3>
+    <div class="sheet-head"><h3 id="import-title"></h3><button class="close" value="close" aria-label="닫기">✕</button></div>
     <ul class="saved-detail" id="import-list"></ul>
     <button class="primary wide" id="import-ok">내 목록에 추가</button>
-    <button class="wide" value="close">닫기</button>
   </form>
 </dialog>
 
 <dialog id="ios">
   <form method="dialog" class="sheet">
-    <h3>홈 화면에 추가하기</h3>
+    <div class="sheet-head"><h3>앱처럼 쓰기</h3><button class="close" value="close" aria-label="닫기">✕</button></div>
     <ol class="steps">
-      <li>Safari 아래쪽 <b>공유 버튼</b>(네모에 화살표)을 눌러요.</li>
-      <li><b>홈 화면에 추가</b>를 눌러요.</li>
-      <li>홈 화면의 놓침제로 아이콘으로 열면 앱처럼 써요.</li>
+      <li>Safari 아래 <b>공유</b> 버튼</li>
+      <li><b>홈 화면에 추가</b></li>
     </ol>
-    <button class="primary wide" value="close">알겠어요</button>
+    <button class="primary wide" value="close">확인</button>
   </form>
 </dialog>
 
